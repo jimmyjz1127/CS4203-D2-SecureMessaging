@@ -1,0 +1,61 @@
+.flex{
+    display:flex;
+}
+
+.col {
+    flex-direction: column;
+}
+
+.row {
+    flex-direction: row;
+}
+
+.align-center {
+    align-items: center;
+}
+
+.align-start {
+    align-items : flex-start;
+}
+
+.align-end{
+    align-items: flex-end;
+}
+
+.justify-center{
+    justify-content: center;
+}
+
+.justify-start {
+    justify-content: flex-start;
+}
+
+.justify-end {
+    justify-content: end;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.justify-evenly{
+    justify-content: space-evenly;
+}
+
+button:hover{
+    cursor:pointer;
+    filter : brightness(0.9);
+}
+
+button:active{
+    transform: scale(0.9);
+}
+
+.btn:hover{
+    cursor:pointer;
+    filter : brightness(0.9);
+}
+
+.btn:active{
+    transform: scale(0.9);
+}

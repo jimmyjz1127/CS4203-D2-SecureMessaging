@@ -1,0 +1,64 @@
+#home{
+    height:100vh;
+    width:100vw;
+    background-color: var(--bg-color-dark);
+}
+
+#logout-btn{
+    position:absolute;
+    right:2%;
+    top:2%;
+
+    font-size:100%;
+    font-weight:600;
+
+    border:none;
+    border-radius:var(--border-radius-m);
+    padding:15px;
+
+    width:10%;
+}
+
+#home-center{
+    min-height:80%;
+    width:75%;
+
+    border:none;
+    border-radius:var(--border-radius-m);
+
+    background-color: var(--secondary-color);
+}
+
+#signin-options{
+    height:fit-content;
+    width:100%;
+}
+
+#signin-options-header{
+    color:white;
+}
+
+#signin-options>a{
+    width: 30%;
+    padding:10px;
+
+    margin:10px;
+    border:none;
+    border-radius:var(--border-radius-m);
+
+    font-size:100%;
+    font-weight:600;
+
+    text-decoration: none;
+}
+
+#home-login-btn{
+    background-color: black;
+    color:white;
+}
+
+#home-register-btn{
+    background-color: lightgray;
+    color:black;
+}
+

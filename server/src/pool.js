@@ -5,11 +5,12 @@
  */
 
 const mysql = require('mysql');
+
 const pool = mysql.createConnection({
     user:'jz75',
-    host:'127.0.0.1',
+    host:'jz75.teaching.cs.st-andrews.ac.uk',
     database:'jz75_CS4203_D2',
-    password:'.8e96x3iPGU6Q9'
+    password:'.8e96x3iPGU6Q9',
 });
 
 pool.connect((err) => {
@@ -17,4 +18,4 @@ pool.connect((err) => {
     else console.log('Database Connected!')
 })
 
-module.exports=pool;
+module.exports = pool;

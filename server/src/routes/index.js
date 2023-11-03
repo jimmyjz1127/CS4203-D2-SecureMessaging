@@ -17,6 +17,24 @@ const db = require('./../database');
 const jwtTokens = require('./../authentication/token');
 const authentication = require('./../authentication/authentication');
 
+const {client_port, client_url, full_url} = require('./../config')
+
+//####################################
+// Middleware
+//####################################
+const origins = [
+    "http://localhost:" + client_port,
+    "http://127.0.0.1:" + client_port
+];
+
+router.use(
+    cors({
+        origin: origins,
+        credentials: true,
+    })
+);
+
+
 //####################################
 // Helper Functions 
 //####################################
@@ -50,17 +68,19 @@ const parseJwt = (token) => {
  *      req.body = {username, email, password}
  */
 router.post('/register', async (req,res) => {
+    console.log('POST : /register')
+
     const {email, username, password} = req.body;
 
     try {
-        db.validate_registration(req.body, (err, res) => {
+        db.validate_registration(req.body, async (err, res1) => {
             if (err) {
                 res.status(500).send('Error : please try again')
-            } else if (!res) {
+            } else if (!res1) {
                 res.status(500).send('Error : username or email already taken');
             } else {
                 // Hash password
-                const password_hash = bcrypt.hash(password, 16)
+                const password_hash = await bcrypt.hash(password, 16)
 
                 const credentials = {
                     username : username,
@@ -68,10 +88,15 @@ router.post('/register', async (req,res) => {
                     password : password_hash
                 }
 
+                console.log(credentials)
+
                 db.add_user(credentials, (err2, res2) => {
-                    if (err2) {res.status(500).send('Error : please try again')} 
+                    if (err2) {
+                        console.log(err2)
+                        res.status(500).send('Error : please try again')
+                    } 
                     else {
-                        let tokens = jwtTokens.jwtTokens(username, email); // generate refresh and access token
+                        let tokens = jwtTokens.jwtCodes(username, email); // generate refresh and access token
                         res.json(tokens) // send refresh and access token back to user
                     }
                 })
@@ -79,9 +104,50 @@ router.post('/register', async (req,res) => {
         })
     } catch (err) {
         console.error(err)
+        res.status(500).send('Invalid credentials, please try again!')
     }
 })
 
+/**
+ * Route handler for login request 
+ * 1) Checks if username exists 
+ * 2) Checks password hashes 
+ * 3) returns user data to client on success
+ */
 router.post('/login', async (req,res) => {
+    console.log('POST : /login')
 
+    try{
+        const {username, password} = req.body;
+
+        db.get_user(username, async (err, result) => {
+            if (err) {
+                console.error(err);
+                res.status(500).send('Check Username!');
+            } else {
+                if (result.length == 0) {
+                    res.status(500).send('Check Username!');
+                } else{
+                    // Compare password hashes 
+                    if (await bcrypt.compare(password,result[0].password)){
+                        let tokens = jwtTokens.jwtCodes(
+                            result[0].username,
+                            result[0].email,
+                        )
+
+                        tokens['username'] = username;
+                        tokens['email'] = result[0].email;
+
+                        res.json(tokens)
+                    } else {
+                        res.status(500).send('Check Password!')
+                    }
+                }
+            }
+        })
+    } catch (err) {
+        console.error(err)
+    }
 })
+
+module.exports = router;
