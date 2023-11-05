@@ -10,6 +10,8 @@ import './Login.css'
 import LoadingIcon from './../../../assets/loading.gif';
 
 function Login(props) {
+    const {bcrypt} = props;
+
     const navigate = useNavigate();
 
     const [username, setUsername] = useState();
@@ -24,12 +26,23 @@ function Login(props) {
         else {
             setLoading(1);
             try {
+                const response = await Axios({
+                    method:'POST',
+                    withCredentials:true,
+                    data : {
+                        username : username
+                    },
+                    url : full_url + '/salt'
+                })
+
+                let salt = response.data.salt;
+
                 const res = await Axios({
                     method:'POST',
                     withCredentials:true,
                     data:{
                         username : username,
-                        password : password
+                        password : bcrypt.hashSync(password, salt)
                     },
                     url:full_url + '/login'
                 });

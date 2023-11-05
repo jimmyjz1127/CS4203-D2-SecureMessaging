@@ -8,9 +8,12 @@ import {server_port, server_url, full_url} from './../../../Config';
 import './Register.css'
 
 import LoadingIcon from './../../../assets/loading.gif';
+import { hash } from 'bcryptjs';
 
 
 function Register(props) {
+    const {bcrypt} = props;
+
     const navigate = useNavigate();
 
     const [username, setUsername] = useState();
@@ -51,13 +54,18 @@ function Register(props) {
         else if (!validatePassword()) {setErrorMessage('Please check password!')}
         else {
             try{
+                setLoading(1);
+
+                const salt = bcrypt.genSaltSync(10);
+
                 const res = await Axios({
                     method:'POST',
                     withCredentials:true,
                     data:{
                         username:username, 
                         email:email,
-                        password:password
+                        password:bcrypt.hashSync(password, salt),
+                        salt : salt
                     },
                     url:full_url + '/register'
                 })
@@ -79,6 +87,7 @@ function Register(props) {
                 setErrorMessage(err.response.data);
             }
         }
+        setLoading(0);
     }
   
     if (!loading) {    

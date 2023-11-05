@@ -70,7 +70,7 @@ const parseJwt = (token) => {
 router.post('/register', async (req,res) => {
     console.log('POST : /register')
 
-    const {email, username, password} = req.body;
+    const {email, username, password, salt} = req.body;
 
     try {
         db.validate_registration(req.body, async (err, res1) => {
@@ -85,10 +85,9 @@ router.post('/register', async (req,res) => {
                 const credentials = {
                     username : username,
                     email : email,
-                    password : password_hash
+                    password : password_hash,
+                    salt:salt
                 }
-
-                console.log(credentials)
 
                 db.add_user(credentials, (err2, res2) => {
                     if (err2) {
@@ -128,8 +127,9 @@ router.post('/login', async (req,res) => {
                 if (result.length == 0) {
                     res.status(500).send('Check Username!');
                 } else{
+
                     // Compare password hashes 
-                    if (await bcrypt.compare(password,result[0].password)){
+                    if (await bcrypt.compareSync(password,result[0].password)){
                         let tokens = jwtTokens.jwtCodes(
                             result[0].username,
                             result[0].email,
@@ -147,6 +147,29 @@ router.post('/login', async (req,res) => {
         })
     } catch (err) {
         console.error(err)
+    }
+})
+
+/**
+ * Retrieves salt value for a user
+ */
+router.post('/salt', async (req,res) => {
+    console.log('GET : /salt');
+
+    const {username} = req.body;
+
+    try {
+        db.get_salt(username, (err,result) => {
+            if (err) {
+                console.log(err);
+                res.status(500).send('Failed to retrieve salt, please check username');
+            } else{
+                res.status(200).send(result[0])
+            }
+        })
+    } catch (err) {
+        console.log(err)
+        res.status(500).send('Failed to retrieve salt, please check username');
     }
 })
 

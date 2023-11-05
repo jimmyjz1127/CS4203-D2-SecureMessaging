@@ -29,11 +29,11 @@ const validate_registration = (credentials, callback) => {
  * @param {*} callback    : callback to return result 
  */
 const add_user = (credentials, callback) => {
-    const {username, email, password} = credentials; 
+    const {username, email, password, salt} = credentials; 
 
-    let query = "INSERT INTO users (username, email, password) VALUES (?,?,?)";
+    let query = "INSERT INTO users (username, email, password, salt) VALUES (?,?,?,?)";
 
-    pool.query(query, [username, email, password], (err,res) => {
+    pool.query(query, [username, email, password, salt], (err,res) => {
         callback(err,res)
     })
 }
@@ -63,9 +63,22 @@ const get_user = (username, callback) => {
     })
 }
 
+/**
+ * Retrieves the salt value for a username
+ * @param {*} username : username (string)
+ */
+const get_salt = (username, callback) => {
+    let query = 'SELECT salt FROM users WHERE username=(?)';
+
+    pool.query(query, [username], (err,res) => {
+        callback(err,res);
+    })
+}
+
 module.exports = {
     validate_registration,
     add_user,
     get_all_usernames,
-    get_user
+    get_user,
+    get_salt
 }

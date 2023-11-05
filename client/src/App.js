@@ -3,7 +3,8 @@ import { useEffect, useLayoutEffect, useState } from 'react';
 import Axios from 'axios';
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
-import bcrypt from 'bcrypt.js';
+
+import {bcrypt} from './crypto'
 
 
 import './App.css';
@@ -13,6 +14,7 @@ import './base.css'
 import Home from './components/pages/home/Home'
 import Login from './components/pages/login/Login'
 import Register from './components/pages/register/Register'
+import { hash } from 'bcryptjs';
 
 function App() {
 
@@ -31,13 +33,23 @@ function App() {
 		window.location.reload();
 	}
 
+	const salt = bcrypt.genSaltSync(10);
+	
+
+
 	return (
 		<div className="App">
+			<button onClick={(e) => console.log(bcrypt.hashSync('password', salt))}>CLICK ME</button>
+			{/* <button onClick={(e) => console.log(bcrypt.compare('password', hash_password))}>asdf</button> */}
 			<BrowserRouter>
 				<Routes>
-					<Route path='/' element={<Home logout={logout}/>} />
-					<Route path='/Login' element={<Login />} />
-					<Route path='/Register' element={<Register />} />
+					<Route path='/' element={<Home logout={logout} />} />
+					<Route path='/Login' element={<Login
+						bcrypt={bcrypt}
+					/>} />
+					<Route path='/Register' element={<Register
+						bcrypt={bcrypt}
+					/>} />
 				</Routes>
 			</BrowserRouter>
 		</div>
