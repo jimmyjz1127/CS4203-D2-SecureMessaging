@@ -39,3 +39,7 @@
 #login-error{
     color :red;
 }
+
+#login-loading{
+   transform: scale(0.5);
+}

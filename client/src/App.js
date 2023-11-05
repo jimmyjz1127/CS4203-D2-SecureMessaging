@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useState } from 'react';
 import Axios from 'axios';
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
+import bcrypt from 'bcrypt.js';
 
 
 import './App.css';

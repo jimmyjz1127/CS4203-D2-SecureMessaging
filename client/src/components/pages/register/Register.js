@@ -7,6 +7,8 @@ import Cookies from 'js-cookie';
 import {server_port, server_url, full_url} from './../../../Config';
 import './Register.css'
 
+import LoadingIcon from './../../../assets/loading.gif';
+
 
 function Register(props) {
     const navigate = useNavigate();
@@ -15,6 +17,8 @@ function Register(props) {
     const [email, setEmail] = useState();
     const [password, setPassword] = useState();
     const [errorMessage, setErrorMessage] = useState();
+
+    const [loading, setLoading] = useState(0);
 
     const validatePassword = () => {
         if (!password) {return false;}
@@ -77,38 +81,47 @@ function Register(props) {
         }
     }
   
-    return (
-        <div id='register' className='flex col align-center justify-center'>
-            <div id="register-center" className='flex col align-center justify-center'>
-                <h1 id='register-header'>Register Account</h1>
+    if (!loading) {    
+        return (
+            <div id='register' className='flex col align-center justify-center'>
+                <div id="register-center" className='flex col align-center justify-center'>
+                    <h1 id='register-header'>Register Account</h1>
 
-                <div id='register-error'>{errorMessage}</div>
+                    <div id='register-error'>{errorMessage}</div>
 
-                <input 
-                    className='register-text' 
-                    type='email' 
-                    placeholder='Enter email...'
-                    onChange={(e) => setEmail(e.target.value)}
-                />
+                    <input 
+                        className='register-text' 
+                        type='email' 
+                        placeholder='Enter email...'
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
 
-                <input 
-                    className='register-text' 
-                    type='text' 
-                    placeholder='Enter username...'
-                    onChange={(e) => setUsername(e.target.value)}
-                />
+                    <input 
+                        className='register-text' 
+                        type='text' 
+                        placeholder='Enter username...'
+                        onChange={(e) => setUsername(e.target.value)}
+                    />
 
-                <input 
-                    className='register-text' 
-                    type='password' 
-                    placeholder='Enter password...'
-                    onChange={(e) => setPassword(e.target.value)}
-                />
+                    <input 
+                        className='register-text' 
+                        type='password' 
+                        placeholder='Enter password...'
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
 
-                <button id='register-btn' onClick={(e) => register()}>Register</button>
+                    <button id='register-btn' onClick={(e) => register()}>Register</button>
+                </div>
             </div>
-        </div>
-    )
+        )
+    } else {
+        return (
+            <div id='register' className='flex col align-center justify-center'>
+                <img id='login-loading' src={LoadingIcon}/>
+                <h1 style={{'color' : 'white'}}>Registering new user...</h1>
+            </div>
+        )
+    }
 }
 
 export default Register;
