@@ -56,7 +56,7 @@ function Register(props) {
             try{
                 setLoading(1);
 
-                const salt = bcrypt.genSaltSync(10);
+                const salt = bcrypt.genSaltSync(10); // Generate salt 
 
                 const res = await Axios({
                     method:'POST',

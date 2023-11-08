@@ -26,6 +26,7 @@ function Login(props) {
         else {
             setLoading(1);
             try {
+                // Retrieve user's salt from server database
                 const response = await Axios({
                     method:'POST',
                     withCredentials:true,
@@ -35,14 +36,15 @@ function Login(props) {
                     url : full_url + '/salt'
                 })
 
-                let salt = response.data.salt;
+                // the salt originally used to hash password before transmission to server 
+                let salt = response.data.salt; 
 
                 const res = await Axios({
                     method:'POST',
                     withCredentials:true,
                     data:{
                         username : username,
-                        password : bcrypt.hashSync(password, salt)
+                        password : bcrypt.hashSync(password, salt) // generate original password hash from registration
                     },
                     url:full_url + '/login'
                 });
