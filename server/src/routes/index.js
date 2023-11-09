@@ -70,7 +70,7 @@ const parseJwt = (token) => {
 router.post('/register', async (req,res) => {
     console.log('POST : /register')
 
-    const {email, username, password, salt} = req.body;
+    const {email, username, password, salt, public_key, private_key} = req.body;
 
     try {
         db.validate_registration(req.body, async (err, res1) => {
@@ -86,7 +86,9 @@ router.post('/register', async (req,res) => {
                     username : username,
                     email : email,
                     password : password_hash,
-                    salt:salt
+                    salt:salt,
+                    public_key:public_key,
+                    private_key:private_key
                 }
 
                 db.add_user(credentials, (err2, res2) => {
@@ -96,6 +98,10 @@ router.post('/register', async (req,res) => {
                     } 
                     else {
                         let tokens = jwtTokens.jwtCodes(username, email); // generate refresh and access token
+                        tokens['username'] = username;
+                        tokens['email'] = email;
+                        tokens['private_key'] = private_key;
+                        tokens['public_key'] = public_key;
                         res.json(tokens) // send refresh and access token back to user
                     }
                 })
@@ -137,6 +143,8 @@ router.post('/login', async (req,res) => {
 
                         tokens['username'] = username;
                         tokens['email'] = result[0].email;
+                        tokens['private_key'] = result[0].private_key;
+                        tokens['public_key'] = result[0].public_key;
 
                         res.json(tokens)
                     } else {
@@ -154,7 +162,7 @@ router.post('/login', async (req,res) => {
  * Retrieves salt value for a user
  */
 router.post('/salt', async (req,res) => {
-    console.log('GET : /salt');
+    console.log('POST : /salt');
 
     const {username} = req.body;
 
@@ -170,6 +178,122 @@ router.post('/salt', async (req,res) => {
     } catch (err) {
         console.log(err)
         res.status(500).send('Failed to retrieve salt, please check username');
+    }
+})
+
+/**
+ * Retrieves all groups 
+ */
+router.post('/allgroups', authentication.authenticateToken, async (req,res) => {
+    console.log('POST : /allgroups')
+
+    try{
+        db.get_all_groups((err, result) => {
+            if (err){
+                console.log(err);
+                res.status(500).send('Failure! Please reload page and try again.');
+            } else {
+                res.status(200).send(result);
+            }
+        })
+    } catch (err) {
+        console.log(err)
+        res.status(500).send('Failure! Please reload page and try again.');
+    }
+})
+
+/**
+ * Retrieves all of a users groups 
+ */
+router.post('/usergroups', authentication.authenticateToken, async (req,res) => {
+    console.log('POST : /usergroups');
+
+    const {username} = req.body;
+
+    try {
+        db.get_user_groups(username, (err,result) => {
+            if (err) {
+                console.log(err);
+                res.status(500).send('Failure! Please reload page and try again.');
+            } else {
+                res.status(200).send(result);
+            }
+        })
+    } catch (err){
+        console.log(err);
+        res.status(500).send('Failure! Please reload page and try again.');
+    }
+})
+
+/**
+ * For retrieving group messages, encrypted for a particular user 
+ */
+router.post('/getMessages', authentication.authenticateToken, async (req,res) => {
+    console.log('POST : /getMessages');
+
+    const {username, group_id} = req.body;
+
+    try {
+        db.get_messages(group_id, username, (err, result) => {
+            if (err) {
+                console.log(err);
+                res.status(500).send("Failure to retrieve messages. Please try again!")
+            } else {
+                res.status(200).send(result);
+            }
+        })
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Failure to retrieve messages. Please try again!")
+    }
+})
+
+/**
+ * For retrieveing public keys of members belonging to particular group 
+ */
+router.post('/getGroupKeys', authentication.authenticateToken, async (req,res) => {
+    console.log('POST : /getGroupkeys');
+
+    const {username, group_id} = req.body;
+
+    try{
+        db.get_group_keys(group_id, (err,result) => {
+            if (err) {
+                console.log(err);
+                res.status(500).send('Faliure retrieving keys : please try again');
+            } else {
+                res.status(200).send(result)
+            }
+        })
+    } catch (err) {
+        console.log(err);
+        res.status(500).send('Faliure retrieving keys : please try again');
+    }
+})
+
+/**
+ * Route Handler for storing messages 
+ */
+router.post('/sendMessage', authentication.authenticateToken, async (req,res) => {
+    console.log('POST : /sendMessage');
+
+    const {messages} = req.body;
+
+    sql_messages = messages.map((obj) => Object.values(obj))
+
+    try {
+        db.store_message(sql_messages, (err,result) => {
+            if(err) {
+                console.log(err);
+                res.status(500).send('Failure to send message : please try again!')
+            } else {
+                res.status(200).send('Success')
+            }
+        })
+        res.status(200).send()
+    } catch (err) {
+        console.log(err)
+        res.status(500).send('Failure to send message : please try again!')
     }
 })
 

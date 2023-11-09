@@ -6,8 +6,12 @@
  */
 
 const bcrypt = require('bcryptjs');
+const elliptic = require('elliptic')
+const crypto = require('crypto-js')
 
 
 module.exports = {
-    bcrypt
+    bcrypt,
+    elliptic,
+    crypto
 }

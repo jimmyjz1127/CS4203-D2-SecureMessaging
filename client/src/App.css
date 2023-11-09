@@ -2,8 +2,11 @@
 
 	--bg-color-dark : rgb(25,25,25);
 	--secondary-color : rgb(54,54,54);
-	--border-radius-m : 1rem;
-	--border-radius-l : 2rem;
+	--border-radius-m : 10px;
+	--border-radius-l : 20px;
+	--purple-accent : rgb(65, 65, 173);
+	--muted-red:rgb(169, 0, 0);
+	--muted-green : rgb(1, 90, 1);
 }
 
 .App {

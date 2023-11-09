@@ -1,0 +1,190 @@
+#message-modal{
+    height:80%;
+    width:80%;
+
+    background-color: var(--secondary-color);
+    border-radius: var(--border-radius-m);
+}
+
+#left-col {
+    height:100%;
+    width:25%;
+    border-top-left-radius: var(--border-radius-m);
+    border-bottom-left-radius: var(--border-radius-m);
+
+    overflow-y:scroll;
+}
+
+#right-col {
+    height:100%;
+    width:75%;
+
+    border-top-right-radius: var(--border-radius-m);
+    border-bottom-right-radius: var(--border-radius-m);
+}
+
+/* -------------- Decrypt Styling ---------------- */
+#decrypt-input {
+    padding:10px;
+    border-radius: var(--border-radius-m);
+    background-color: var(--bg-color-dark);
+    border:none;
+    width:45%;
+    color:white;
+}
+
+#decrypt-btn{
+    width:25%;
+    border-radius: var(--border-radius-m);
+    padding:10px;
+    margin-top:10px;
+    border:none;
+    font-weight:600;
+}
+
+/* ------------ Group Tile Syling ------------- */
+#groups {
+    padding:5px;
+}
+
+.group-tile{
+    background-color: var(--bg-color-dark);
+    color:white;
+    margin:5px;
+    padding:0px 10px 0px 10px;
+    border-radius:var(--border-radius-m);
+}
+
+.member-tile{
+    border:1px solid var(--purple-accent);
+}
+
+/* ------------ Left Panel Menu --------------- */
+
+#left-menu-bar{
+    width:100%;
+    height:10%;
+
+    background-color: var(--purple-accent);
+    padding:10px 0px 10px 10px;
+
+    color:white;
+
+    box-sizing: border-box;
+}
+
+#group-search{
+    padding:10px;
+    border-radius: var(--border-radius-m);
+    background-color: white;
+    border:none;
+
+    width:80%;
+}
+
+#create-group-btn{
+    border-radius: var(--border-radius-m);
+    border:none;
+    width:10%;
+    background-color: var(--secondary-color);
+    height:100%;
+}
+
+#create-group-btn>*{
+    filter:invert(100%)
+}
+
+/* ------------ Message Panel Top Bar ------------ */
+
+#right-menu-bar{
+    width:100%;
+    height:10%;
+
+    box-sizing: border-box;
+}
+
+#message-panel-bar{
+    width:95%;
+    height:80%;
+
+    border:1px solid white;
+    border-radius:var(--border-radius-m);
+
+    padding:1%;
+    box-sizing: border-box;
+}
+
+.message-btn{
+    padding:5px;
+    border-radius: var(--border-radius-m);
+    border:none;
+    font-weight:500;
+
+    padding:10px;
+}
+
+#add-member-btn{
+    
+    background-color: var(--purple-accent);
+    color:white;
+}
+
+#leave-group-btn{
+    margin:5px;
+
+    background-color: var(--muted-red);
+    color:white;
+}
+
+#view-members-btn{
+    background-color: var(--bg-color-dark);
+    color:white;
+}
+
+/* ----------- Message Panel Messages ------------- */
+
+#message-section{
+    height:80%;
+    width:100%;
+}
+
+/* ---------- Message Panel Bottom Bar ------------ */
+
+#type-message-container{
+    height:10%;
+    width:100%;
+}
+
+#type-message-bar{
+    width:95%;
+    height:80%;
+    border-radius:var(--border-radius-m);
+    background-color: var(--bg-color-dark);
+    filter:opacity(0.9);
+    padding:5px;
+
+    box-sizing: border-box;
+}
+
+#message-input{
+    width:80%;
+    height:80%;
+    border:none;
+    background-color: transparent;
+
+    font-size:large;
+    color:white;
+
+    padding-left:5px;
+}
+
+#send-msg-btn{
+    width:20%;
+    height : 95%;
+    border:none;
+    border-radius: inherit;
+    background-color: var(--purple-accent);
+    color:white;
+    font-size:large;
+    font-weight:600;
+}

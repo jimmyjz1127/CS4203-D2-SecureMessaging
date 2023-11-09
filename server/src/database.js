@@ -29,11 +29,11 @@ const validate_registration = (credentials, callback) => {
  * @param {*} callback    : callback to return result 
  */
 const add_user = (credentials, callback) => {
-    const {username, email, password, salt} = credentials; 
+    const {username, email, password, salt, public_key, private_key} = credentials; 
 
-    let query = "INSERT INTO users (username, email, password, salt) VALUES (?,?,?,?)";
+    let query = "INSERT INTO users (username, email, password, salt, public_key, private_key) VALUES (?,?,?,?,?,?)";
 
-    pool.query(query, [username, email, password, salt], (err,res) => {
+    pool.query(query, [username, email, password, salt, public_key, private_key], (err,res) => {
         callback(err,res)
     })
 }
@@ -75,10 +75,83 @@ const get_salt = (username, callback) => {
     })
 }
 
+
+/**
+ * Retrieves all groups 
+ */
+const get_all_groups = (callback) => {
+    let query = 'SELECT * FROM groups';
+
+    pool.query(query, [], (err,res) => {
+        callback(err,res)
+    })
+}
+
+/**
+ * Returns group information for all groups that username is a member of 
+ * @param {*} username : string username id 
+ * @param {*} callback : callback to returns list of group information 
+ */
+const get_user_groups = (username, callback) => {
+    let query = 'SELECT groups.* FROM groups WHERE groups.id IN (SELECT group_id FROM membership WHERE username=(?))';
+
+    pool.query(query, [username], (err,res) => {
+        callback(err,res)
+    })
+}
+
+/**
+ * Returns all message objects belonging to particular group, hashed for a specific user 
+ * @param {*} id       : group id 
+ * @param {*} username : username of user 
+ * @param {*} callback 
+ */
+const get_messages = (id, username, callback) => {
+    let query = 'SELECT * FROM messages WHERE key_user=(?) and group_id=(?) SORT BY datatime ASC';
+
+    pool.query(query, [username, id], (err,res) => {
+        callback(err,res)
+    })
+}
+
+/**
+ * Retrieves public keys for all users belonging to particular group 
+ * @param {*} id        : id of group 
+ * @param {*} callback 
+ */
+const get_group_keys = (id, callback) => {
+    let query = 'SELECT users.public_key, users.username FROM users ' + 
+                'INNER JOIN membership ON membership.username=users.username ' + 
+                'WHERE membership.group_id=(?)';
+
+    pool.query(query, [id], (err,res) => {
+        callback(err,res)
+    })
+}
+
+
+/**
+ * Stores encrypted messages into database
+ * @param {} messages : list of messages object values [[author, content, group_id, key_user, datetime]]
+ * @param {*} callback 
+ */
+const store_message = (messages, callback) => {
+    let query = 'INSERT INTO messages (author, content, group_id, key_user, datetime) VALUES ?';
+
+    pool.query(query, messages, (err, res) => {
+        callback(err,res);
+    })
+}
+
 module.exports = {
     validate_registration,
     add_user,
     get_all_usernames,
     get_user,
-    get_salt
+    get_salt,
+    get_all_groups,
+    get_user_groups,
+    get_messages,
+    get_group_keys,
+    store_message
 }

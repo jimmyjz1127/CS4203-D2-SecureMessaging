@@ -3,16 +3,18 @@ import { useEffect, useLayoutEffect, useState } from 'react';
 import Axios from 'axios';
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
+import {ec} from 'elliptic';
+import {crypto} from './../../../crypto'
 
 import {server_port, server_url, full_url} from './../../../Config';
 import './Register.css'
 
+// Assets 
 import LoadingIcon from './../../../assets/loading.gif';
-import { hash } from 'bcryptjs';
 
 
 function Register(props) {
-    const {bcrypt} = props;
+    const {bcrypt, decrypt_string, encrypt_string, generateKeyPair} = props;
 
     const navigate = useNavigate();
 
@@ -48,6 +50,7 @@ function Register(props) {
         return true;
     }
 
+
     const register = async () => {
         if (!validateEmail()) {setErrorMessage('Please check email!');}
         else if (!validateUsername()) {setErrorMessage('Please check username!');}
@@ -57,6 +60,10 @@ function Register(props) {
                 setLoading(1);
 
                 const salt = bcrypt.genSaltSync(10);
+                let {public_key, private_key} = generateKeyPair();
+
+                // encrypt private key (asymetrically) with password before sending to server for storage 
+                let encrypted_private_key = encrypt_string(private_key, password); 
 
                 const res = await Axios({
                     method:'POST',
@@ -65,10 +72,14 @@ function Register(props) {
                         username:username, 
                         email:email,
                         password:bcrypt.hashSync(password, salt),
-                        salt : salt
+                        salt : salt,
+                        public_key:public_key,
+                        private_key:encrypted_private_key
                     },
                     url:full_url + '/register'
                 })
+                setPassword(null);
+
                 let data = res.data;
 
                 let access_token = data.accessToken;
@@ -76,10 +87,12 @@ function Register(props) {
                 let access_token_expiry = new Date(data.accessExpiryDate)
                 let refresh_token_expiry = new Date(data.refreshExpiryDate)
 
-                Cookies.set('access_token', access_token);
-                Cookies.set('username', username);
-                Cookies.set('email', data.email);
-                Cookies.set('login_state', 1)
+                Cookies.set('access_token', access_token, {secure:true});
+                Cookies.set('username', username, {secure:true});
+                Cookies.set('email', data.email, {secure:true});
+                Cookies.set('login_state', 1, {secure:true})
+                Cookies.set('private_key', encrypted_private_key, {secure:true});
+                Cookies.set('public_key', public_key, {secure:true});
 
                 navigate('/');
             } catch (err) {
