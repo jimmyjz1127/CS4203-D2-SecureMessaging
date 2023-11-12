@@ -103,7 +103,6 @@ function MessageModal(props) {
 
             let data = res.data; 
 
-
             let encrypted_private_key = Cookies.get('private_key');
 
             let private_key = decrypt_key(encrypted_private_key, password);
@@ -285,8 +284,7 @@ function MessageModal(props) {
                     group_id : group_id,
                     key_user : obj.username,
                     datetime : date,
-                    type : '1',
-                    
+                    type : '1'
                 }
             })
 

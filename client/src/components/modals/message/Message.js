@@ -24,7 +24,7 @@ function Message(props){
                 data: { 
                     username : author,
                     group_id : message.group_id,
-                    token:'Bearer ' + Cookies.get('access_token')
+                    token:Cookies.get('access_token')
                 },
                 url : full_url + '/joinGroup'
             })
