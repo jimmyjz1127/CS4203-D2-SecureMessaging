@@ -17,10 +17,6 @@ function Home(props){
 
     const [loginState, setLoginState] = useState(0);
 
-    // const [allGroups, setAllGroups] = useState([]); // List of all group objects on server 
-
-    // const [userGroups, setUserGroups] = useState([]); // List of group objects that use is member of 
-
     const [groups, setGroups] = useState([]);
 
     const [errorMsg, setErrorMsg] = useState('');
@@ -46,8 +42,14 @@ function Home(props){
 
     }, [])
 
+    /**
+     * Retrieves all groups from server database 
+     * @param {*} token     : access token
+     * @param {*} callback 
+     */
     const getGroups = async (token, callback) => {
         try {
+            // Get all groups 
             const res = await Axios({
                 method: 'POST',
                 headers : {
@@ -56,13 +58,15 @@ function Home(props){
                 url : full_url + '/allgroups'
             })
 
+            // Get groups that user is a member of 
             const res2 = await Axios({
                 method : 'POST',
                 headers: {
                     Authorization : 'Bearer ' + token
                 },
                 data : {
-                    username : Cookies.get('username')
+                    username : Cookies.get('username'),
+                    token:Cookies.get('access_token') 
                 },
                 url : full_url + '/usergroups'
             })
@@ -86,11 +90,47 @@ function Home(props){
         }
     }
 
+    /**
+     * For deleting account from application 
+     */
+    const delete_account = async () => {
+        const confirmation = window.confirm('Are you sure you want to delete you account permenantly?');
+
+        if (confirmation) {
+            try {
+                const res = await Axios({
+                    method:'POST',
+                    withCredentials : {
+                        Authorization : 'Bearer ' + Cookies.get('access_token') 
+                    },
+                    data : {
+                        username : Cookies.get('username'),
+                        token:Cookies.get('access_token') 
+                    },
+                    url : full_url + '/deleteUser'
+                })
+                setErrorMsg('');
+                logout();
+                console.log(res.data)
+            } catch (err) {
+                console.log(err)
+                setErrorMsg('Failure to delete account! Please logout and try again.')
+            }
+        }
+    }
+
 
     return (
         <div id='home' className='flex col align-center justify-center'>
             {loginState == 1 &&
-                <button id='logout-btn' onClick={(e) => logout()}>Logout</button>
+                <div id='acc-management' className='flex row align-center justify-between'>
+                    <h1 style={{color:'white', fontSize:'24px'}} >Welcome {Cookies.get('username')}</h1>
+                    <div>
+                        <button id='logout-btn' onClick={(e) => logout()}>Logout</button>
+                        <button id='delete-account-btn' onClick={(e) => delete_account()}>Delete Account</button>
+                    </div>
+                    <div className='error-msg'>{errorMsg}</div>
+                </div>
             }
             
             

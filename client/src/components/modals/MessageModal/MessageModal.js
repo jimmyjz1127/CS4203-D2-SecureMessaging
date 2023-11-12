@@ -37,6 +37,8 @@ function MessageModal(props) {
 
     const [password, setPassword] = useState([]);
 
+    const [errMsg, setErrMsg] = useState('')
+
     /**
      * Toggles group listing (left panel) between all groups and groups that user is apart of 
      * @param {*} event 
@@ -55,6 +57,16 @@ function MessageModal(props) {
 
     const selectGroup = (event, group) => {
         if (group.id != selectGroup.id){
+            let group_tiles = document.getElementsByClassName('group-tile')
+
+            for (let i = 0; i < group_tiles.length; i++)  {
+                if (group_tiles[i] != event.target) {
+                    group_tiles[i].style.border = 'none'
+                } else {
+                    group_tiles[i].style.border = '2px solid white';
+                }
+            }
+
             if (group.member) {
                 setType(1);
                 setSelectedGroup(group);
@@ -83,12 +95,14 @@ function MessageModal(props) {
                 },
                 data : {
                     username : username,
-                    group_id : group_id
+                    group_id : group_id,
+                    token:Cookies.get('access_token')
                 },
                 url : full_url + '/getMessages'
             })
 
             let data = res.data; 
+
 
             let encrypted_private_key = Cookies.get('private_key');
 
@@ -96,13 +110,14 @@ function MessageModal(props) {
             
             const decrypted_messages = data.map((message) => {
                 let decrypted = decrypt_string(message.content, private_key);
-                console.log(decrypted)
                 let x = {
                     id : message.id,
                     author:message.author,
                     datetime:message.datetime,
                     content:decrypted,
-                    key_user:message.key_user
+                    key_user:message.key_user,
+                    type : message.type,
+                    group_id : message.group_id
                 }
                 return x
             })
@@ -114,10 +129,10 @@ function MessageModal(props) {
             setMessages(decrypted_messages);
 
             setType(2);
-        
+            setErrMsg('');
         } catch (err) {
             console.log(err);
-            // some error message 
+            setErrMsg('Invalid Password!')
         }
     }
 
@@ -134,7 +149,8 @@ function MessageModal(props) {
                 },
                 data : {
                     username : username,
-                    group_id : selectedGroup.id
+                    group_id : selectedGroup.id,
+                    token:Cookies.get('access_token')
                 },
                 url: full_url + '/getGroupKeys'
             })
@@ -150,7 +166,8 @@ function MessageModal(props) {
                     content : encrypted,
                     group_id : selectedGroup.id,
                     key_user : obj.username,
-                    datetime : date
+                    datetime : date,
+                    type : '0'
                 }
             })
 
@@ -161,7 +178,8 @@ function MessageModal(props) {
                     Authorization : 'Bearer ' + Cookies.get('access_token')
                 },
                 data: {
-                    messages : encrypted_copies
+                    messages : encrypted_copies,
+                    token:Cookies.get('access_token')
                 },
                 url : full_url + '/sendMessage'
             })
@@ -177,6 +195,10 @@ function MessageModal(props) {
         }
     }
 
+    /**
+     * Function for creating groups - sends new group info to server to Db storage 
+     * @param {*} id : id of name input element
+     */
     const createGroup = async (id) => {
         let name = document.getElementById(id).value;
 
@@ -191,15 +213,128 @@ function MessageModal(props) {
                 data : {
                     name : name,
                     username : username, 
-                    datetime: datetime
+                    datetime: datetime,
+                    token:Cookies.get('access_token')
                 },
                 url: full_url + '/addGroup'
             })
             
             setGroups(groups => [...groups, res.data]);
+            selectGroup(null, res.data)
 
         } catch (err) {
             console.log(err)
+        }
+    }
+
+    /**
+     * For leaving a group
+     * @param {*} group_id 
+     */
+    const leave_group = async (group_id) => {
+        try {
+            const res = await Axios({
+                method : 'POST',
+                headers : {
+                    Authorization : 'Bearer ' + Cookies.get('access_token')
+                },
+                data : {
+                    username : username,
+                    group_id : group_id,
+                    token:Cookies.get('access_token')
+                },
+                url : full_url + '/leaveGroup'
+            })
+
+            window.location.reload();
+
+        } catch (err) {
+            console.log(err)
+            setErrMsg('Failure to leave group! Please refresh or logout and try again.')
+        }
+    }
+
+    /**
+     * For sending group join requests 
+     * @param {*} username 
+     * @param {*} group_id 
+     */
+    const send_join_request = async (username, group_id) => {
+        try {
+            let date = new Date().toLocaleString();
+
+            //Get group member usernames and public keys 
+            const res = await Axios({
+                method:'POST',
+                headers : {
+                    Authorization : 'Bearer ' + Cookies.get('access_token')
+                },
+                data : {
+                    username : username,
+                    group_id : group_id,
+                    token:Cookies.get('access_token')
+                },
+                url : full_url + '/getGroupKeys'
+            })
+
+            // Assemble list of message copies for each group member
+            let encrypted_messages = res.data.map((obj) => {
+                return {
+                    author : username,
+                    content : '',
+                    group_id : group_id,
+                    key_user : obj.username,
+                    datetime : date,
+                    type : '1',
+                    
+                }
+            })
+
+            // send messages to be stored 
+            const res2 = await Axios({
+                method:'POST',
+                headers : {
+                    Authorization : 'Bearer ' + Cookies.get('access_token')
+                },
+                data : {
+                    messages : encrypted_messages,
+                    token:Cookies.get('access_token')
+                },
+                url : full_url + '/requestJoinGroup'
+            })
+
+            let btn = document.getElementById('request-join-btn');
+            btn.innerHTML = 'Request Sent!'
+            btn.disabled = true;
+            btn.style.backgroundColor = 'var(--secondary-color)'
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    /**
+     * handles deleting a message (join request messages)
+     * @param {*} message_id 
+     */
+    const delete_message = async (author) => {
+        try {
+            const res = await Axios({
+                method : 'POST',
+                headers : {
+                    Authorization : 'Bearer ' + Cookies.get('access_token')
+                },
+                data : {
+                    author : author,
+                    token:Cookies.get('access_token')
+                },
+                url : full_url + '/deleteMessage'
+            })
+
+           let new_messages = messages.filter((obj) => (obj.type != 1) && (obj.author != author))
+
+            setMessages(new_messages)
+        } catch (err) {
+
         }
     }
 
@@ -246,6 +381,7 @@ function MessageModal(props) {
                         <input type='text' placeholder='Enter group name...' id='create-group-input'/>
                         <button id='create-group' onClick={(e) => createGroup('create-group-input')}>Create</button>
                     </div>
+                    <div className='err-msg'>{errMsg}</div>
                 </div>
             }
 
@@ -254,6 +390,7 @@ function MessageModal(props) {
                     <h2 style={{color:'white'}}>Enter password to decrypt messages.</h2>
                     <input id='decrypt-input' type='password' placeholder='Enter password...' onChange={(e) => setPassword(e.target.value)}/>
                     <button id='decrypt-btn' onClick={(e) => retrieveMessages(selectedGroup.id)}>Decrypt Messages</button>
+                    <div className='err-msg'>{errMsg}</div>
                 </div>
 
             }
@@ -272,7 +409,7 @@ function MessageModal(props) {
                                     </button>
                                 </div>
 
-                                <button id='leave-group-btn' className='message-btn'>
+                                <button id='leave-group-btn' className='message-btn' onClick={(e) => leave_group(selectedGroup.id)}>
                                     <FontAwesomeIcon icon={faRightFromBracket}/>
                                 </button>
                                 <button id='view-members-btn' className='message-btn'>Members</button>
@@ -284,7 +421,7 @@ function MessageModal(props) {
                         {
                             messages.map((message) => {
                                 return (
-                                    <Message message={message} username={username}/>
+                                    <Message message={message} username={username} delete_message={delete_message}/>
                                 )
                             })
                         }
@@ -299,9 +436,15 @@ function MessageModal(props) {
             }   
 
             {type == 3 && 
-                <div>
-                    <h1>TesT</h1>
-                </div> 
+                <div id='right-col' className='flex row align-center justify-center'>
+                    <div className='join-group flex col align-center justify-center'>
+                        <div className='flex row align-center'>
+                            Request to join &nbsp;
+                            <div style={{color:'var(--purple-accent)'}}>{selectedGroup.name}?</div>
+                        </div>
+                        <button id="request-join-btn" onClick={(e) => send_join_request(Cookies.get('username'), selectedGroup.id)}>Send Request</button>
+                    </div> 
+                </div>
             }
             
         </div>

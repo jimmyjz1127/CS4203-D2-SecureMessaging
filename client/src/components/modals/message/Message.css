@@ -24,9 +24,16 @@
 }
 
 .message-bubble {
-    font-size: 2em;
+    font-size: 1.5em;
 }
 
 .author {
     font-size: 1em;
+}
+
+.request-btn {
+    margin:5px;
+    border:none;
+    border-radius: var(--border-radius-m);
+    padding:2% 5% 2% 5%;
 }

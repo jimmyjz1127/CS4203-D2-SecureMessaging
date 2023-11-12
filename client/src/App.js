@@ -79,8 +79,6 @@ function App() {
 	 * @returns : decrypted string data 
 	 */
 	const decrypt_string = (data, secret) => {
-		console.log(data)
-		console.log(secret)
 		var decrypt = new JSEncrypt();
 		decrypt.setPrivateKey(secret);
 		var uncrypted = decrypt.decrypt(data);
@@ -103,7 +101,6 @@ function App() {
 
 	return (
 		<div className="App">
-			<button onClick={(e) => test()}>test</button>
 			<BrowserRouter>
 				<Routes>
 					<Route path='/' element={<Home 

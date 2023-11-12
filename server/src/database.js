@@ -4,6 +4,7 @@
  * @Since October 31, 2023
  */
 
+const { group } = require('console');
 const pool = require('./pool.js');
 const fs = require('fs/promises');
 
@@ -136,7 +137,7 @@ const get_group_keys = (id, callback) => {
  * @param {*} callback 
  */
 const store_message = (messages, callback) => {
-    let query = 'INSERT INTO messages (author, content, group_id, key_user, datetime, id) VALUES ?';
+    let query = 'INSERT INTO messages (author, content, group_id, key_user, datetime, type, id) VALUES ?';
 
     pool.query(query, [messages], (err, res) => {
         callback(err,res);
@@ -156,7 +157,12 @@ const add_group = (data, callback) => {
     })
 } 
 
-
+/**
+ * Adds user to group (membership)
+ * @param {*} username 
+ * @param {*} group_id 
+ * @param {*} callback 
+ */
 const add_user_to_group = (username, group_id, callback) => {
     let query = 'INSERT INTO membership (group_id, username) VALUES (?,?)';
 
@@ -165,6 +171,49 @@ const add_user_to_group = (username, group_id, callback) => {
     })
 }
 
+/**
+ * Removes a user from memberships for a particular group
+ * @param {*} username 
+ * @param {*} group_id 
+ * @param {*} callback 
+ */
+const remove_user_from_group = (username, group_id, callback) => {
+    let query = 'DELETE FROM membership WHERE username=(?) AND group_id=(?)';
+
+    pool.query(query, [username, group_id], (err,res) => {
+        callback(err,res);
+    })
+}
+
+/**
+ * Removes user account form database
+ * @param {*} username 
+ * @param {*} callback 
+ */
+const delete_user = (username, callback) => {
+    let query = 'DELETE FROM users WHERE username=(?)';
+
+    pool.query(query, [username], (err,res) => {
+        callback(err,res)
+    })
+}
+
+
+const delete_message = (author, callback) => {
+    let query = 'DELETE FROM messages WHERE author=(?) AND type=(?)';
+
+    pool.query(query, [author, 1], (err,res) => {
+        callback(err,res);
+    })
+}
+
+const get_group_members = (group_id, callback) => {
+    let query = 'SELECT username FROM membership WHERE group_id=(?)';
+
+    pool.query(query,[group_id], (err,res) => {
+        callback(err,res)
+    })
+}
 
 
 module.exports = {
@@ -179,5 +228,9 @@ module.exports = {
     get_group_keys,
     store_message,
     add_group,
-    add_user_to_group
+    add_user_to_group,
+    remove_user_from_group,
+    delete_user,
+    delete_message,
+    get_group_members
 }

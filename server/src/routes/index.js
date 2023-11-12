@@ -53,7 +53,32 @@ const parseJwt = (token) => {
     }
 };
 
-
+/**
+ * Checks whether a given username is a member of a given group
+ * @param {*} group_id 
+ * @param {*} user_id 
+ * @returns 
+ */
+const check_group_membership = (group_id, user_id) => {
+    return new Promise((resolve, reject) => {
+        try {
+            db.get_group_members(group_id, (err, result) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    for (let i = 0; i < result.length; i++) {
+                        if (result[i].username == user_id) {
+                            resolve(true);
+                        }
+                    }
+                    resolve(false);
+                }
+            });
+        } catch (err) {
+            reject(err);
+        }
+    });
+};
 
 //###################################
 // Router Handlers 
@@ -179,7 +204,7 @@ router.post('/salt', async (req,res) => {
     } catch (err) {
         console.log(err)
         res.status(500).send('Failed to retrieve salt, please check username');
-    }
+    }    
 })
 
 /**
@@ -209,20 +234,26 @@ router.post('/allgroups', authentication.authenticateToken, async (req,res) => {
 router.post('/usergroups', authentication.authenticateToken, async (req,res) => {
     console.log('POST : /usergroups');
 
-    const {username} = req.body;
+    const {username, token} = req.body;
 
-    try {
-        db.get_user_groups(username, (err,result) => {
-            if (err) {
-                console.log(err);
-                res.status(500).send('Failure! Please reload page and try again.');
-            } else {
-                res.status(200).send(result);
-            }
-        })
-    } catch (err){
-        console.log(err);
-        res.status(500).send('Failure! Please reload page and try again.');
+    const user_id = parseJwt(token).username; 
+
+    if (user_id == username){
+        try {
+            db.get_user_groups(username, (err,result) => {
+                if (err) {
+                    console.log(err);
+                    res.status(500).send('Failure! Please reload page and try again.');
+                } else {
+                    res.status(200).send(result);
+                }
+            })
+        } catch (err){
+            console.log(err);
+            res.status(500).send('Failure! Please reload page and try again.');
+        }
+    } else {
+        res.status(500).send('Can only retrieve your own groups')
     }
 })
 
@@ -279,7 +310,9 @@ router.post('/getGroupKeys', authentication.authenticateToken, async (req,res) =
 router.post('/sendMessage', authentication.authenticateToken, async (req,res) => {
     console.log('POST : /sendMessage');
 
-    const {messages} = req.body;
+    const {messages, token} = req.body;
+
+    const user_id = parseJwt(token).username; 
 
     let message_id = uuidv1();
 
@@ -307,7 +340,9 @@ router.post('/sendMessage', authentication.authenticateToken, async (req,res) =>
 })
 
 
-
+/**
+ * Route handler for adding a newly created group to database 
+ */
 router.post('/addGroup', authentication.authenticateToken, async (req,res) => {
     console.log('POST : /addGroup');
 
@@ -340,6 +375,146 @@ router.post('/addGroup', authentication.authenticateToken, async (req,res) => {
     } catch (err) {
         console.log(err);
         res.status(500).send('Failure to create group : please try again!')
+    }
+})
+
+
+/**
+ * Route handler for removing user from a group
+ */
+router.post('/leaveGroup', authentication.authenticateToken, async (req, res) => {
+    console.log('POST : /leaveGroup');
+
+    const {username, group_id, token} = req.body;
+
+    const user_id = parseJwt(token).username; 
+
+    if (username == user_id){
+        try {
+            db.remove_user_from_group(username, group_id, (err, result) => {
+                if (err) {
+                    console.log(err);
+                    res.status(500).send('Error removing user from group! Please try again.');
+                } else {
+                    res.status(200).send('Successfully removed user from group');
+                }
+            })
+        } catch (err) {
+            console.log(err);
+        }
+    }
+})
+
+/**
+ * Route handler from deleting user from application
+ */
+router.post('/deleteUser', authentication.authenticateToken, async (req,res) => {
+    console.log('POST : /deleteUser');
+
+    const {username,token} = req.body; 
+
+    const user_id = parseJwt(token).username; 
+
+    if (username == user_id) {
+        try{
+            db.delete_user(username, (err,result) => {
+                if(err) {
+                    console.log(err);
+                    res.status(500).send('Failure to delete user');
+                } else {
+                    res.status(200).send('Success')
+                }
+            })
+        } catch (err) {
+    
+        }
+    } else {
+        res.status(500).send('Can only delete yourself, not other users!')
+    }
+
+    
+})
+
+/**
+ * Route handler for storing group join request messages in database
+ */
+router.post('/requestJoinGroup', authentication.authenticateToken, async (req,res) => {
+    console.log('POST : /requestJoinGroup');
+
+    let message_id = uuidv1();
+
+    sql_messages = req.body.messages.map((obj) => {
+        let values = Object.values(obj);
+        values.push(message_id);
+        return values 
+    })
+
+    try  {
+        db.store_message(sql_messages, (err,result) => {
+            if (err) {
+                console.log(err);
+                res.status(500).send('Failure to send request')
+            } else { 
+                res.status(200).send('Success')
+            }
+        })
+    } catch (err) {
+        console.log(err);
+        res.status(500).send('Failure to send request')
+    }
+})
+
+
+
+/**
+ * Route handler for Accepting user to gorup
+ */
+router.post('/joinGroup', authentication.authenticateToken, async (req,res) => {
+    console.log('POST : /requestJoinGroup');
+
+    const {username, group_id, token} = req.body;
+
+    let user_id = parseJwt(token).username;
+
+    if (await check_group_membership(group_id, user_id)){
+        try {
+            db.add_user_to_group(username, group_id, (err,result) => {
+                if (err) {
+                    console.log(err);
+                    res.status(500).send('Failure to add user to group!')
+                } else {
+                    res.status(200).send('success')
+                }
+            })
+        } catch (err) {
+            console.log(err);
+            res.status(500).send('Failure to add user to group!')
+        }
+    } else {
+        res.status(500).send('Invalid priviledges for this action.')
+    }
+
+    
+})
+
+
+router.post('/deleteMessage', authentication.authenticateToken, async (req,res) => {
+    console.log('POST : /deleteMessage');
+
+    const {author, token} = req.body;
+
+    try {
+        db.delete_message(author, (err,result) => {
+            if (err) {
+                console.log(err);
+                res.status(500).send('Failed to delete message')
+            } else {
+                res.status(200).send('Success')
+            }
+        })
+    } catch (err) {
+        console.log(err);
+        res.status(500).send('Failed to delete message')
     }
 })
 

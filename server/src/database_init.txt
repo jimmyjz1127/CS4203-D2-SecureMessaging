@@ -1,3 +1,7 @@
+/////////////////////////////////////////////////////////
+// TABLE CREATION
+/////////////////////////////////////////////////////////
+
 CREATE TABLE users(
     username VARCHAR(200) NOT NULL,
     email VARCHAR(200) NOT NULL,
@@ -26,10 +30,11 @@ CREATE TABLE membership(
 CREATE TABLE messages(
     id VARCHAR(200) NOT NULL,
     content TEXT NOT NULL, 
-    author VARCHAR(200) NOT NULL,
+    author VARCHAR(200),
     group_id VARCHAR(200) NOT NULL,
-    key_user VARCHAR(200) NOT NULL,
+    key_user VARCHAR(200),
     datetime VARCHAR(200) NOT NULL,
+    type VARCHAR(100) NOT NULL,
     PRIMARY KEY (id, key_user),
     FOREIGN KEY (author)  REFERENCES users(username),
     FOREIGN KEY (group_id) REFERENCES groups(id),
@@ -37,4 +42,27 @@ CREATE TABLE messages(
 );
 
 
+////////////////////////////////////////
+// Triggers 
+////////////////////////////////////////
 
+DELIMITER $$
+CREATE TRIGGER no_members_trigger 
+AFTER DELETE ON membership
+FOR EACH ROW
+BEGIN 
+    IF (SELECT COUNT(*) FROM membership WHERE group_id=OLD.group_id) = 0 THEN 
+        DELETE FROM groups WHERE id=OLD.group_id;
+    END IF;
+END $$
+DELIMITER ;
+
+
+DELIMITER $$
+CREATE TRIGGER delete_user_trigger
+BEFORE DELETE ON users
+FOR EACH ROW 
+BEGIN 
+    DELETE FROM membership WHERE username=OLD.username;
+END $$
+DELIMTIER ;

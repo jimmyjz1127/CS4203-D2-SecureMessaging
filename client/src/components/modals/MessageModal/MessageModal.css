@@ -56,7 +56,8 @@
 }
 
 .member-tile{
-    border:1px solid var(--purple-accent);
+    /* border:1px solid var(--purple-accent); */
+    background-color: var(--purple-accent);
 }
 
 /* ------------- Group Creation Form -------------- */
@@ -204,4 +205,31 @@
     color:white;
     font-size:large;
     font-weight:600;
+}
+
+.err-msg {
+    margin-top:5px;
+    color:red;
+}
+
+/* ============= Join Group Styling =============== */
+.join-group {
+    background-color: var(--bg-color-dark);
+    width:50%;
+    height:50%;
+    border-radius: var(--border-radius-m);
+    color:white;
+}
+
+#request-join-btn{
+    border:none;
+    border-radius: var(--border-radius-m);
+    padding:10px 20px 10px 20px;
+    margin-top:10px;
+
+    font-weight:600;
+
+    color:white;
+    background-color: var(--purple-accent);
+
 }
