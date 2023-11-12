@@ -6,36 +6,18 @@ import Cookies from 'js-cookie';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faFilter, faUserPlus, faPenToSquare, faRightFromBracket, faUnlock} from '@fortawesome/free-solid-svg-icons';
 
+
+import Message from './../message/Message';
+
 import {full_url} from './../../../Config';
 
 import './MessageModal.css';
 
 
 function MessageModal(props) {
-    const {allGroups, encrypt_string, decrypt_string} = props;
+    const {allGroups, encrypt_string, decrypt_string, encrypt_key, decrypt_key} = props;
 
     const username = Cookies.get('username')
-
-    const allGroupsX = [
-        {
-            id:'adasd',
-            created:'November 23rd, 2023',
-            name:'Some Group',
-            member:true
-        },
-        {
-            id:'adasd2',
-            created:'November 23rd, 2023',
-            name:'A Group',
-            member:false
-        },
-        {
-            id:'adasd3',
-            created:'November 23rd, 2023',
-            name:'CS4203 Group',
-            member:true
-        }
-    ]
 
     /**
      * 0 : Create Group 
@@ -45,7 +27,7 @@ function MessageModal(props) {
      */
     const [type, setType] = useState(0); // set to 0 if no groups 
 
-    const [groups, setGroups] = useState(allGroupsX);
+    const [groups, setGroups] = useState(allGroups);
 
     const [selectedGroup, setSelectedGroup] = useState();
 
@@ -72,13 +54,17 @@ function MessageModal(props) {
     }
 
     const selectGroup = (event, group) => {
-        if (group.member) {
-            setType(1);
-            setSelectedGroup(group);
-        } else {
-            setType(3)
-            setSelectedGroup(group);
-        }
+        if (group.id != selectGroup.id){
+            if (group.member) {
+                setType(1);
+                setSelectedGroup(group);
+            } else {
+                setType(3)
+                setSelectedGroup(group);
+            }
+            setMessage('');
+            setMessages([])
+        } 
     }
 
 
@@ -106,16 +92,24 @@ function MessageModal(props) {
 
             let encrypted_private_key = Cookies.get('private_key');
 
-            let private_key = decrypt_string(encrypted_private_key, password);
-
-            setPassword(null) // throw away password after use 
-
+            let private_key = decrypt_key(encrypted_private_key, password);
+            
             const decrypted_messages = data.map((message) => {
-                message.content = decrypt_string(message.content, private_key);
-                return message;
+                let decrypted = decrypt_string(message.content, private_key);
+                console.log(decrypted)
+                let x = {
+                    id : message.id,
+                    author:message.author,
+                    datetime:message.datetime,
+                    content:decrypted,
+                    key_user:message.key_user
+                }
+                return x
             })
 
             private_key = null; //throw away private key after use 
+
+            setPassword(null) // throw away password after use 
 
             setMessages(decrypted_messages);
 
@@ -132,6 +126,7 @@ function MessageModal(props) {
         try {
             let date = new Date().toLocaleString();
 
+            // Retrieve public keys of all members in group to encrypt message 
             const res = await Axios({
                 method:'POST',
                 headers: {
@@ -143,33 +138,23 @@ function MessageModal(props) {
                 },
                 url: full_url + '/getGroupKeys'
             })
+
+            let data = res.data;
             
-
-            // let data = res.data;
-            let data = [
-                {
-                    public_key:Cookies.get('public_key'),
-                    username : 'jz75'
-                }, 
-                {
-                    public_key : 'sdfsdf.sdfs3fesf.sf3',
-                    username : 'bob'
-                }
-            ]
-
-            console.log(message)
-
-            let encrypted_copies = data.map((obj) => {                
+            // Created an encrypted copy of message for each members public key
+            let encrypted_copies = data.map((obj) => {     
+                let encrypted = encrypt_string(message, obj.public_key);    
+   
                 return {
                     author : username, 
-                    content : encrypt_string(message, obj.public_key),
+                    content : encrypted,
                     group_id : selectedGroup.id,
                     key_user : obj.username,
                     datetime : date
                 }
             })
-           
 
+            // Send encrypted copies to server for storage 
             const response = await Axios({
                 method:'POST',
                 headers: {
@@ -180,6 +165,11 @@ function MessageModal(props) {
                 },
                 url : full_url + '/sendMessage'
             })
+            response.data[0].content = message;
+
+            setMessages(messages => [...messages, response.data[0]]);
+
+            setMessage('');
 
         } catch(err) {
             console.log(err);
@@ -187,19 +177,42 @@ function MessageModal(props) {
         }
     }
 
+    const createGroup = async (id) => {
+        let name = document.getElementById(id).value;
+
+        let datetime = new Date().toLocaleString();
+
+        try {
+            const res = await Axios({
+                method: 'POST', 
+                headers : {
+                    Authorization : 'Bearer ' + Cookies.get('access_token')
+                },
+                data : {
+                    name : name,
+                    username : username, 
+                    datetime: datetime
+                },
+                url: full_url + '/addGroup'
+            })
+            
+            setGroups(groups => [...groups, res.data]);
+
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
 
     return (
         <div id='message-modal' className='flex row'>
-            <button onClick={(e) => sendMessage()}>CLICKME</button>
             <div id='left-col'>
-                <div id='left-menu-bar' className='flex col align-start justify-between'>
-                    <div className='flex row align-center justify-between' style={{width:'90%'}}>
-                        <input type='text' placeholder='Search groups' id='group-search'/>
-                        <button id='create-group-btn' >
-                            <FontAwesomeIcon icon={faPenToSquare}/>
-                        </button>
-                    </div>
-                    <div className="flex row align-center" style={{backgroundColor:'var(--bg-color-dark)', borderRadius:'var(--border-radius-m)', padding:'3px', marginTop:'5px'}}>
+                <div id='left-menu-bar' className='flex row align-center'>
+                    <button id='create-group-btn' onClick={(e) => setType(0)}>
+                        <FontAwesomeIcon icon={faPenToSquare}/>
+                    </button>
+
+                    <div className="flex row align-center" style={{backgroundColor:'var(--bg-color-dark)', borderRadius:'var(--border-radius-m)', padding:'5px', height:'50%'}}>
                         <input id='all-groups-check' type='checkbox' onClick={(e) => changeGroupListing(e)}/>
                         <label style={{fontSize:'12px'}}>Show Only Your Groups</label>
                     </div>
@@ -227,8 +240,12 @@ function MessageModal(props) {
             </div>
 
             {type == 0 &&
-                <div>
-                    
+                <div id="right-col" className='password-prompt flex col align-center justify-center'>
+                    <div id='create-group-form'>
+                        <h1>Create Group</h1>
+                        <input type='text' placeholder='Enter group name...' id='create-group-input'/>
+                        <button id='create-group' onClick={(e) => createGroup('create-group-input')}>Create</button>
+                    </div>
                 </div>
             }
 
@@ -236,7 +253,7 @@ function MessageModal(props) {
                 <div id="right-col" className='password-prompt flex col align-center justify-center'>
                     <h2 style={{color:'white'}}>Enter password to decrypt messages.</h2>
                     <input id='decrypt-input' type='password' placeholder='Enter password...' onChange={(e) => setPassword(e.target.value)}/>
-                    <button id='decrypt-btn' onClick={(e) => retrieveMessages(selectedGroup)}>Decrypt Messages</button>
+                    <button id='decrypt-btn' onClick={(e) => retrieveMessages(selectedGroup.id)}>Decrypt Messages</button>
                 </div>
 
             }
@@ -264,12 +281,18 @@ function MessageModal(props) {
                         </div>
                     </div>
                     <div id='message-section'>
-
+                        {
+                            messages.map((message) => {
+                                return (
+                                    <Message message={message} username={username}/>
+                                )
+                            })
+                        }
                     </div>
                     <div id='type-message-container' className='flex col align-center justify-center'>
                         <div id='type-message-bar' className='flex row align-center'>
-                            <input id='message-input' type='text' placeholder='Type a message...'/>
-                            <button id='send-msg-btn'>Send</button>
+                            <input id='message-input' type='text' value={message} placeholder='Type a message...' onChange={(e) => setMessage(e.target.value)}/>
+                            <button id='send-msg-btn' onClick={(e) => sendMessage()}>Send</button>
                         </div>
                     </div>
                 </div>

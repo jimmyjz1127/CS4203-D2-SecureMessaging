@@ -13,7 +13,7 @@ import './Home.css';
 import MessageModal from '../../modals/MessageModal/MessageModal';
 
 function Home(props){
-    const {logout, encrypt_string, decrypt_string} = props;
+    const {logout, encrypt_string, decrypt_string, encrypt_key, decrypt_key} = props;
 
     const [loginState, setLoginState] = useState(0);
 
@@ -29,7 +29,6 @@ function Home(props){
     const navigate = useNavigate();
 
     useLayoutEffect(() => {
-        console.log('test')
         const token = Cookies.get('access_token');
 
         if (token) {
@@ -71,13 +70,10 @@ function Home(props){
             let allGroups = res.data;
             let userGroups = res2.data;
 
-            console.log(allGroups)
-            console.log(userGroups)
-
             let userGroupKeys = userGroups.map((obj) => obj.id)
 
             allGroups.map((group) => {
-                if (group.id in userGroupKeys) group.member=true;
+                if (userGroupKeys.includes(group.id)) group.member=true;
                 else group.member = false;
             })
 
@@ -108,7 +104,13 @@ function Home(props){
                 </div>
             }
             {loginState == 1 &&
-                <MessageModal allGroups={groups} encrypt_string={encrypt_string} decrypt_string={decrypt_string}/>
+                <MessageModal 
+                    allGroups={groups} 
+                    encrypt_string={encrypt_string} 
+                    decrypt_string={decrypt_string}
+                    encrypt_key={encrypt_key}
+                    decrypt_key={decrypt_key}
+                />
             }
             
         </div>

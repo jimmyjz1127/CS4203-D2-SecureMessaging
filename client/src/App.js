@@ -3,8 +3,9 @@ import { useEffect, useLayoutEffect, useState } from 'react';
 import Axios from 'axios';
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
+import { JSEncrypt } from "jsencrypt";
 
-import {bcrypt, crypto} from './crypto'
+import {bcrypt, crypto, keypair} from './crypto'
 import {ec} from 'elliptic'
 
 import './App.css';
@@ -16,7 +17,7 @@ import Login from './components/pages/login/Login'
 import Register from './components/pages/register/Register'
 
 function App() {
-	const x = 'hello'
+	const elliptic = new ec('secp256k1');
 
 	/**
 	 * Logs user out - clears all cookies 
@@ -32,19 +33,29 @@ function App() {
 
 		window.location.reload();
 	}
+	
+	function test(){
+		const {public_key, private_key} = generateKeyPair();
+
+		console.log(public_key);
+
+		console.log(private_key)
+
+		let encrypted = encrypt_string('Hello World There', public_key);
+		let decrypted = decrypt_string(encrypted, private_key);
+
+		console.log(encrypted);
+		console.log(decrypted)
+	}
 
 	/**
      * Generates public and private keypair (RSA)
      * @returns public key and private key (STRINGS)
      */
     const generateKeyPair = () => {
-        const elliptic = new ec('secp256k1');
+		const key_pair = keypair();
 
-        const key_pair = elliptic.genKeyPair();
-        const public_key = key_pair.getPublic('hex');
-        const private_key = key_pair.getPrivate('hex')
-
-        return {public_key, private_key}
+		return {public_key : key_pair.public, private_key : key_pair.private};
     }
 
 	/**
@@ -54,8 +65,11 @@ function App() {
 	 * @returns : the encrypted cipher text 
 	 */
     const encrypt_string =  (data, secret) => {
-        let cipher = crypto.AES.encrypt(data, secret).toString();
-        return cipher
+		var encrypt = new JSEncrypt();
+		encrypt.setPublicKey(secret)
+		var encrypted = encrypt.encrypt(data);
+
+		return encrypted;
     }
 
 	/**
@@ -65,7 +79,22 @@ function App() {
 	 * @returns : decrypted string data 
 	 */
 	const decrypt_string = (data, secret) => {
-		let bytes = crypto.AES.decrypt(data, secret);
+		console.log(data)
+		console.log(secret)
+		var decrypt = new JSEncrypt();
+		decrypt.setPrivateKey(secret);
+		var uncrypted = decrypt.decrypt(data);
+
+		return uncrypted
+	}
+
+	const encrypt_key = (data,secret) => {
+		let cipher = crypto.AES.encrypt(data, secret).toString();
+		return cipher;
+	}
+
+	const decrypt_key = (cipher,secret) => {
+		let bytes = crypto.AES.decrypt(cipher, secret);
 		let decipher = bytes.toString(crypto.enc.Utf8);
 		return decipher;
 	}
@@ -74,25 +103,31 @@ function App() {
 
 	return (
 		<div className="App">
-			{/* <button onClick={(e) => test()}>test</button> */}
+			<button onClick={(e) => test()}>test</button>
 			<BrowserRouter>
 				<Routes>
 					<Route path='/' element={<Home 
 						logout={logout} 
 						encrypt_string={encrypt_string}
 						decrypt_string={decrypt_string}
+						encrypt_key={encrypt_key}
+						decrypt_key={decrypt_key}
 					/>} />
 					<Route path='/Login' element={<Login
 						bcrypt={bcrypt}
 						encrypt_string={encrypt_string}
 						decrypt_string={decrypt_string}
 						generateKeyPair={generateKeyPair}
+						encrypt_key={encrypt_key}
+						decrypt_key={decrypt_key}
 					/>} />
 					<Route path='/Register' element={<Register
 						bcrypt={bcrypt}
 						encrypt_string={encrypt_string}
 						decrypt_string={decrypt_string}
 						generateKeyPair={generateKeyPair}
+						encrypt_key={encrypt_key}
+						decrypt_key={decrypt_key}
 					/>} />
 				</Routes>
 			</BrowserRouter>

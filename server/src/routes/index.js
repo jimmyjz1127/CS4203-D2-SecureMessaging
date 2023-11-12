@@ -12,6 +12,7 @@ var router = express.Router();
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
+const { v1: uuidv1 } = require("uuid");
 
 const db = require('./../database');
 const jwtTokens = require('./../authentication/token');
@@ -239,6 +240,7 @@ router.post('/getMessages', authentication.authenticateToken, async (req,res) =>
                 console.log(err);
                 res.status(500).send("Failure to retrieve messages. Please try again!")
             } else {
+                console.log(result)
                 res.status(200).send(result);
             }
         })
@@ -279,7 +281,14 @@ router.post('/sendMessage', authentication.authenticateToken, async (req,res) =>
 
     const {messages} = req.body;
 
-    sql_messages = messages.map((obj) => Object.values(obj))
+    let message_id = uuidv1();
+
+    sql_messages = messages.map((obj) => {
+        let values = Object.values(obj);
+        values.push(message_id);
+        return values
+    })
+
 
     try {
         db.store_message(sql_messages, (err,result) => {
@@ -287,13 +296,50 @@ router.post('/sendMessage', authentication.authenticateToken, async (req,res) =>
                 console.log(err);
                 res.status(500).send('Failure to send message : please try again!')
             } else {
-                res.status(200).send('Success')
+                messages.id = message_id;
+                res.status(200).send(messages)
             }
         })
-        res.status(200).send()
     } catch (err) {
         console.log(err)
         res.status(500).send('Failure to send message : please try again!')
+    }
+})
+
+
+
+router.post('/addGroup', authentication.authenticateToken, async (req,res) => {
+    console.log('POST : /addGroup');
+
+    const {name, username, datetime} = req.body;
+
+    let group_id = uuidv1();
+
+    try {   
+        db.add_group([group_id, datetime, name], (err,result) => {
+            if (err) {
+                console.log(err);
+                res.status(500).send('Failure to create group : please try again!')
+            } else {
+                db.add_user_to_group(username, group_id, (err2, result2) => {
+                    if(err2) {
+                        console.log(err2);
+                        res.status(500).send('Failure to add user to group!')
+                    } else {
+                        let obj = {
+                            id : group_id,
+                            created : datetime,
+                            name : name,
+                            member:true
+                        }
+                        res.status(200).json(obj);
+                    }
+                })
+            }
+        })
+    } catch (err) {
+        console.log(err);
+        res.status(500).send('Failure to create group : please try again!')
     }
 })
 

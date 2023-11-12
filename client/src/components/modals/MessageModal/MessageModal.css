@@ -59,6 +59,29 @@
     border:1px solid var(--purple-accent);
 }
 
+/* ------------- Group Creation Form -------------- */
+#create-group-form{
+    color:white;
+    width:75%;
+}
+
+#create-group-input { 
+    border:none;
+    border-radius:var(--border-radius-m);
+    padding:10px;
+    margin:5px;
+    width:55%;
+}
+
+#create-group{
+    border:none;
+    padding:10px 25px 10px 25px;
+    border-radius: var(--border-radius-m);
+    color:white;
+    font-weight:600;
+    background-color: var(--purple-accent);
+}
+
 /* ------------ Left Panel Menu --------------- */
 
 #left-menu-bar{
@@ -73,21 +96,13 @@
     box-sizing: border-box;
 }
 
-#group-search{
-    padding:10px;
-    border-radius: var(--border-radius-m);
-    background-color: white;
-    border:none;
-
-    width:80%;
-}
-
 #create-group-btn{
     border-radius: var(--border-radius-m);
     border:none;
-    width:10%;
+    width:15%;
+    height:65%;
     background-color: var(--secondary-color);
-    height:100%;
+    margin-right:5px;
 }
 
 #create-group-btn>*{
@@ -146,6 +161,8 @@
 #message-section{
     height:80%;
     width:100%;
+
+    overflow-y:scroll;
 }
 
 /* ---------- Message Panel Bottom Bar ------------ */

@@ -3,14 +3,14 @@ CREATE TABLE users(
     email VARCHAR(200) NOT NULL,
     password VARCHAR(300) NOT NULL,
     salt VARCHAR(200) NOT NULL,
-    public_key VARCHAR(300) NOT NULL,
-    private_key VARCHAR(300) NOT NULL,
+    public_key TEXT NOT NULL,
+    private_key TEXT NOT NULL,
     PRIMARY KEY (username)
 );
 
 CREATE TABLE groups(
     id VARCHAR(200) NOT NULL,
-    created DATE NOT NULL,
+    created VARCHAR(200) NOT NULL,
     name VARCHAR(200) NOT NULL,
     PRIMARY KEY (id)
 );
@@ -25,15 +25,15 @@ CREATE TABLE membership(
 
 CREATE TABLE messages(
     id VARCHAR(200) NOT NULL,
-    content VARCHAR(500) NOT NULL, 
+    content TEXT NOT NULL, 
     author VARCHAR(200) NOT NULL,
     group_id VARCHAR(200) NOT NULL,
     key_user VARCHAR(200) NOT NULL,
-    datetime DATE NOT NULL,
+    datetime VARCHAR(200) NOT NULL,
     PRIMARY KEY (id, key_user),
     FOREIGN KEY (author)  REFERENCES users(username),
     FOREIGN KEY (group_id) REFERENCES groups(id),
-    FOREIGN KEY (key_USER) REFERENCES users(username)
+    FOREIGN KEY (key_user) REFERENCES users(username)
 );
 
 

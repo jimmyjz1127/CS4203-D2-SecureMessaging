@@ -107,7 +107,7 @@ const get_user_groups = (username, callback) => {
  * @param {*} callback 
  */
 const get_messages = (id, username, callback) => {
-    let query = 'SELECT * FROM messages WHERE key_user=(?) and group_id=(?) SORT BY datatime ASC';
+    let query = 'SELECT * FROM messages WHERE key_user=(?) and group_id=(?) ORDER BY datetime ASC';
 
     pool.query(query, [username, id], (err,res) => {
         callback(err,res)
@@ -136,12 +136,36 @@ const get_group_keys = (id, callback) => {
  * @param {*} callback 
  */
 const store_message = (messages, callback) => {
-    let query = 'INSERT INTO messages (author, content, group_id, key_user, datetime) VALUES ?';
+    let query = 'INSERT INTO messages (author, content, group_id, key_user, datetime, id) VALUES ?';
 
-    pool.query(query, messages, (err, res) => {
+    pool.query(query, [messages], (err, res) => {
         callback(err,res);
     })
 }
+
+/**
+ * Stores a new group in database
+ * @param {*} data : [id, created, name,]
+ * @param {*} callback 
+ */
+const add_group = (data, callback) => {
+    let query = 'INSERT INTO groups (id, created, name) VALUES (?,?,?)';
+
+    pool.query(query, data, (err,res) => {
+        callback(err,res)
+    })
+} 
+
+
+const add_user_to_group = (username, group_id, callback) => {
+    let query = 'INSERT INTO membership (group_id, username) VALUES (?,?)';
+
+    pool.query(query, [group_id, username], (err,res) => {
+        callback(err,res)
+    })
+}
+
+
 
 module.exports = {
     validate_registration,
@@ -153,5 +177,7 @@ module.exports = {
     get_user_groups,
     get_messages,
     get_group_keys,
-    store_message
+    store_message,
+    add_group,
+    add_user_to_group
 }

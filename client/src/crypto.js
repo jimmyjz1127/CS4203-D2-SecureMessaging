@@ -8,10 +8,13 @@
 const bcrypt = require('bcryptjs');
 const elliptic = require('elliptic')
 const crypto = require('crypto-js')
+const keypair = require('keypair')
+
 
 
 module.exports = {
     bcrypt,
     elliptic,
-    crypto
+    crypto,
+    keypair
 }

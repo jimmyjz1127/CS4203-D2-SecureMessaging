@@ -14,7 +14,7 @@ import LoadingIcon from './../../../assets/loading.gif';
 
 
 function Register(props) {
-    const {bcrypt, decrypt_string, encrypt_string, generateKeyPair} = props;
+    const {bcrypt, decrypt_string, encrypt_string, generateKeyPair, encrypt_key} = props;
 
     const navigate = useNavigate();
 
@@ -62,8 +62,8 @@ function Register(props) {
                 const salt = bcrypt.genSaltSync(10);
                 let {public_key, private_key} = generateKeyPair();
 
-                // encrypt private key (asymetrically) with password before sending to server for storage 
-                let encrypted_private_key = encrypt_string(private_key, password); 
+                // encrypt private key (symetrically) with password before sending to server for storage 
+                let encrypted_private_key = encrypt_key(private_key, password); 
 
                 const res = await Axios({
                     method:'POST',
