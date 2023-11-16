@@ -1,0 +1,68 @@
+/////////////////////////////////////////////////////////
+// TABLE CREATION
+/////////////////////////////////////////////////////////
+
+CREATE TABLE users(
+    username VARCHAR(200) NOT NULL,
+    email VARCHAR(200) NOT NULL,
+    password VARCHAR(300) NOT NULL,
+    salt VARCHAR(200) NOT NULL,
+    public_key TEXT NOT NULL,
+    private_key TEXT NOT NULL,
+    PRIMARY KEY (username)
+);
+
+CREATE TABLE groups(
+    id VARCHAR(200) NOT NULL,
+    created VARCHAR(200) NOT NULL,
+    name VARCHAR(200) NOT NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE membership(
+    group_id VARCHAR(200) NOT NULL,
+    username VARCHAR(200) NOT NULL,
+    PRIMARY KEY (group_id, username),
+    FOREIGN KEY (group_id) REFERENCES groups(id),
+    FOREIGN KEY (username) REFERENCES users(username)
+);
+
+CREATE TABLE messages(
+    id VARCHAR(200) NOT NULL,
+    content TEXT NOT NULL, 
+    author VARCHAR(200),
+    group_id VARCHAR(200) NOT NULL,
+    key_user VARCHAR(200),
+    datetime VARCHAR(200) NOT NULL,
+    type VARCHAR(100) NOT NULL,
+    PRIMARY KEY (id, key_user),
+    FOREIGN KEY (author)  REFERENCES users(username),
+    FOREIGN KEY (group_id) REFERENCES groups(id),
+    FOREIGN KEY (key_user) REFERENCES users(username)
+);
+
+
+////////////////////////////////////////
+// Triggers 
+////////////////////////////////////////
+
+DELIMITER $$
+CREATE TRIGGER no_members_trigger 
+AFTER DELETE ON membership
+FOR EACH ROW
+BEGIN 
+    IF (SELECT COUNT(*) FROM membership WHERE group_id=OLD.group_id) = 0 THEN 
+        DELETE FROM groups WHERE id=OLD.group_id;
+    END IF;
+END $$
+DELIMITER ;
+
+
+DELIMITER $$
+CREATE TRIGGER delete_user_trigger
+BEFORE DELETE ON users
+FOR EACH ROW 
+BEGIN 
+    DELETE FROM membership WHERE username=OLD.username;
+END $$
+DELIMTIER ;

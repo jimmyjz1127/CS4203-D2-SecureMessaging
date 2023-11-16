@@ -10,7 +10,7 @@ import './Login.css'
 import LoadingIcon from './../../../assets/loading.gif';
 
 function Login(props) {
-    const {bcrypt} = props;
+    const {bcrypt, encrypt_string, decrypt_string} = props;
 
     const navigate = useNavigate();
 
@@ -49,24 +49,25 @@ function Login(props) {
                     url:full_url + '/login'
                 });
 
+                setPassword(null); // get rid of password from browser
+
                 let data = res.data;
 
-                let access_token = data.accessToken;
-                let refresh_token = data.refreshToken;
-                let access_token_expiry = new Date(data.accessExpiryDate)
-                let refresh_token_expiry = new Date(data.refreshExpiryDate)
+                let private_key = data.private_key;
+                let public_key = data.public_key;
                 let email = data.email;
 
-                Cookies.set('access_token', access_token);
-                Cookies.set('username', username);
-                Cookies.set('email', email)
-                Cookies.set('login_state', 1)
+                Cookies.set('username', username, {secure:true, sameSite:'Strict'});
+                Cookies.set('email', email, {secure:true, sameSite:'Strict'})
+                Cookies.set('private_key', private_key, {secure:true, sameSite:'Strict'})
+                Cookies.set('public_key', public_key, {secure:true, sameSite:'Strict'})
+                Cookies.set('login_state', 1, {secure:true, sameSite:'Strict'})
 
                 navigate('/')
 
             } catch (err) {
                 console.log(err)
-                setErrorMessage(err.response.data)
+                // setErrorMessage(err.response.data)
             }
             setLoading(0)
         }

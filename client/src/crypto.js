@@ -6,8 +6,13 @@
  */
 
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto-js')
+const keypair = require('keypair')
+
 
 
 module.exports = {
-    bcrypt
+    bcrypt,
+    crypto,
+    keypair
 }

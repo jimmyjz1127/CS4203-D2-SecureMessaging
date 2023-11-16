@@ -7,6 +7,7 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const {urlencoded} = require('express')
 
 
@@ -14,6 +15,7 @@ const app = express();
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(express.urlencoded({extended:true}));
+app.use(cookieParser());
 
 const indexRouter = require('./routes/index')
 

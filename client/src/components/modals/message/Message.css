@@ -1,0 +1,40 @@
+.message-row {
+    width: 100%;
+    height: fit-content;
+
+}
+
+.message-wrapper {
+    padding: 10px;
+}
+
+
+.left {
+    background-color: lightgray;
+    padding: 5px;
+    border-radius: var(--border-radius-m);
+    border-bottom-left-radius: 0%;
+}
+
+.right {
+    background-color: var(--purple-accent);
+    padding: 5px;
+    border-radius: var(--border-radius-m);
+    border-bottom-right-radius: 0%;
+}
+
+.message-bubble {
+    font-size: 1.5em;
+}
+
+.author {
+    color:rgb(140, 140, 140);
+    font-size: 1em;
+}
+
+.request-btn {
+    margin:5px;
+    border:none;
+    border-radius: var(--border-radius-m);
+    padding:2% 5% 2% 5%;
+}
