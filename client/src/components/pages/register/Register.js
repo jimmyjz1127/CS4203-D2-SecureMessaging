@@ -3,8 +3,6 @@ import { useEffect, useLayoutEffect, useState } from 'react';
 import Axios from 'axios';
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
-import {ec} from 'elliptic';
-import {crypto} from './../../../crypto'
 
 import {server_port, server_url, full_url} from './../../../Config';
 import './Register.css'
@@ -82,17 +80,11 @@ function Register(props) {
 
                 let data = res.data;
 
-                let access_token = data.accessToken;
-                let refresh_token = data.refreshToken;
-                let access_token_expiry = new Date(data.accessExpiryDate)
-                let refresh_token_expiry = new Date(data.refreshExpiryDate)
-
-                Cookies.set('access_token', access_token, {secure:true});
-                Cookies.set('username', username, {secure:true});
-                Cookies.set('email', data.email, {secure:true});
-                Cookies.set('login_state', 1, {secure:true})
-                Cookies.set('private_key', encrypted_private_key, {secure:true});
-                Cookies.set('public_key', public_key, {secure:true});
+                Cookies.set('username', username, {secure:true, sameSite:'Strict'});
+                Cookies.set('email', data.email, {secure:true, sameSite:'Strict'});
+                Cookies.set('login_state', 1, {secure:true, sameSite:'Strict'})
+                Cookies.set('private_key', encrypted_private_key, {secure:true, sameSite:'Strict'});
+                Cookies.set('public_key', public_key, {secure:true, sameSite:'Strict'});
 
                 navigate('/');
             } catch (err) {

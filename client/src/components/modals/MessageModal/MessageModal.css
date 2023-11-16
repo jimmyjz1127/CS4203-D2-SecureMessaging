@@ -21,6 +21,8 @@
 
     border-top-right-radius: var(--border-radius-m);
     border-bottom-right-radius: var(--border-radius-m);
+
+    border-left : 1px solid white;
 }
 
 /* -------------- Decrypt Styling ---------------- */

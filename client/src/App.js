@@ -4,10 +4,9 @@ import Axios from 'axios';
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
 import { JSEncrypt } from "jsencrypt";
-
 import {bcrypt, crypto, keypair} from './crypto'
-import {ec} from 'elliptic'
 
+// Styling 
 import './App.css';
 import './base.css'
 
@@ -15,14 +14,16 @@ import './base.css'
 import Home from './components/pages/home/Home'
 import Login from './components/pages/login/Login'
 import Register from './components/pages/register/Register'
+import Expire from './components/pages/expire/Expire'
+
+import { full_url } from './Config';
 
 function App() {
-	const elliptic = new ec('secp256k1');
 
 	/**
 	 * Logs user out - clears all cookies 
 	 */
-	const logout = () => {
+	const logout = async () => {
 		// Get an array of all cookie names
 		const cookieNames = Object.keys(Cookies.get());
 
@@ -31,7 +32,18 @@ function App() {
 			Cookies.remove(cookieName);
 		});
 
-		window.location.reload();
+		// Send request to server to clear HttpOnly cookies from server-side 
+		try {
+			const res = await Axios({
+				method : 'POST',
+				withCredentials:true,
+				url: full_url + '/logout'
+			})
+		} catch (err) {
+			console.log(err)
+		}
+
+		// window.location.reload();
 	}
 	
 	function test(){
@@ -104,7 +116,7 @@ function App() {
 			<BrowserRouter>
 				<Routes>
 					<Route path='/' element={<Home 
-						logout={logout} 
+						logout={logout}
 						encrypt_string={encrypt_string}
 						decrypt_string={decrypt_string}
 						encrypt_key={encrypt_key}
@@ -126,6 +138,7 @@ function App() {
 						encrypt_key={encrypt_key}
 						decrypt_key={decrypt_key}
 					/>} />
+					<Route path='/Expire' element={<Expire logout={logout}/>}/>
 				</Routes>
 			</BrowserRouter>
 		</div>

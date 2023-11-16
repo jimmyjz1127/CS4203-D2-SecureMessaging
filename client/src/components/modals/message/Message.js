@@ -18,13 +18,9 @@ function Message(props){
         try {
             const res = await Axios({
                 method : 'POST',
-                headers : {
-                    Authorization : 'Bearer ' + Cookies.get('access_token')
-                },
                 data: { 
                     username : author,
                     group_id : message.group_id,
-                    token:Cookies.get('access_token')
                 },
                 url : full_url + '/joinGroup'
             })

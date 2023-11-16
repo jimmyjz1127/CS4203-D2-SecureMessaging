@@ -124,11 +124,18 @@ router.post('/register', async (req,res) => {
                     } 
                     else {
                         let tokens = jwtTokens.jwtCodes(username, email); // generate refresh and access token
-                        tokens['username'] = username;
-                        tokens['email'] = email;
-                        tokens['private_key'] = private_key;
-                        tokens['public_key'] = public_key;
-                        res.json(tokens) // send refresh and access token back to user
+
+                        res.cookie('refresh_token', tokens.refreshToken, {httpOnly:true, sameSite:'Strict', secure:true})
+                        res.cookie('access_token', tokens.accessToken, {httpOnly:true, sameSite:'Strict', secure:true})
+
+                        let obj = {
+                            username : username,
+                            email : email,
+                            private_key : private_key,
+                            public_key : public_key
+                        }
+
+                        res.json(obj);
                     }
                 })
             }
@@ -167,12 +174,17 @@ router.post('/login', async (req,res) => {
                             result[0].email,
                         )
 
-                        tokens['username'] = username;
-                        tokens['email'] = result[0].email;
-                        tokens['private_key'] = result[0].private_key;
-                        tokens['public_key'] = result[0].public_key;
+                        res.cookie('refresh_token', tokens.refreshToken, {httpOnly:true, sameSite:'Strict', secure:true})
+                        res.cookie('access_token', tokens.accessToken, {httpOnly:true, sameSite:'Strict', secure:true})
 
-                        res.json(tokens)
+                        let obj = {
+                            username : username,
+                            email : result[0].email,
+                            private_key : result[0].private_key,
+                            public_key : result[0]. public_key
+                        }
+
+                        res.json(obj);
                     } else {
                         res.status(500).send('Check Password!')
                     }
@@ -182,6 +194,19 @@ router.post('/login', async (req,res) => {
     } catch (err) {
         console.error(err)
     }
+})
+
+
+router.post('/logout', (req,res) => {
+    console.log('POST : /logout');
+
+    const cookieNames = Object.keys(req.cookies);
+
+    cookieNames.forEach((name) => {
+        res.clearCookie(name, {httpOnly:true})
+    })
+
+    res.status(200).send('Success')
 })
 
 /**
@@ -234,9 +259,11 @@ router.post('/allgroups', authentication.authenticateToken, async (req,res) => {
 router.post('/usergroups', authentication.authenticateToken, async (req,res) => {
     console.log('POST : /usergroups');
 
-    const {username, token} = req.body;
+    const {username} = req.body;
 
-    const user_id = parseJwt(token).username; 
+    const {access_token} = req.cookies;
+
+    const user_id = parseJwt(access_token).username; 
 
     if (user_id == username){
         try {
@@ -310,9 +337,10 @@ router.post('/getGroupKeys', authentication.authenticateToken, async (req,res) =
 router.post('/sendMessage', authentication.authenticateToken, async (req,res) => {
     console.log('POST : /sendMessage');
 
-    const {messages, token} = req.body;
+    const {messages} = req.body;
+    const {access_token} = req.cookies;
 
-    const user_id = parseJwt(token).username; 
+    const user_id = parseJwt(access_token).username; 
 
     let message_id = uuidv1();
 
@@ -385,9 +413,10 @@ router.post('/addGroup', authentication.authenticateToken, async (req,res) => {
 router.post('/leaveGroup', authentication.authenticateToken, async (req, res) => {
     console.log('POST : /leaveGroup');
 
-    const {username, group_id, token} = req.body;
+    const {username, group_id} = req.body;
+    const {access_token} = req.cookies;
 
-    const user_id = parseJwt(token).username; 
+    const user_id = parseJwt(access_token).username; 
 
     if (username == user_id){
         try {
@@ -411,9 +440,11 @@ router.post('/leaveGroup', authentication.authenticateToken, async (req, res) =>
 router.post('/deleteUser', authentication.authenticateToken, async (req,res) => {
     console.log('POST : /deleteUser');
 
-    const {username,token} = req.body; 
+    const {username} = req.body; 
 
-    const user_id = parseJwt(token).username; 
+    const {access_token} = req.cookies;
+
+    const user_id = parseJwt(access_token).username; 
 
     if (username == user_id) {
         try{
@@ -472,9 +503,11 @@ router.post('/requestJoinGroup', authentication.authenticateToken, async (req,re
 router.post('/joinGroup', authentication.authenticateToken, async (req,res) => {
     console.log('POST : /requestJoinGroup');
 
-    const {username, group_id, token} = req.body;
+    const {username, group_id} = req.body;
 
-    let user_id = parseJwt(token).username;
+    const {access_token} = req.cookies;
+
+    const user_id = parseJwt(access_token).username; 
 
     if (await check_group_membership(group_id, user_id)){
         try {

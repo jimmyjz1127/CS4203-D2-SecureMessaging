@@ -1,5 +1,5 @@
 import React from 'react';
-import {useEffect, useLayoutEffect, useState} from 'react';
+import {useEffect, useLayoutEffect, useState, useRef} from 'react';
 import Axios from 'axios';
 import {BrowserRouter, Routes, Route, useNavigate, Link} from "react-router-dom";
 import Cookies from 'js-cookie';
@@ -15,7 +15,9 @@ import './MessageModal.css';
 
 
 function MessageModal(props) {
-    const {allGroups, encrypt_string, decrypt_string, encrypt_key, decrypt_key} = props;
+    const {allGroups, encrypt_string, decrypt_string, encrypt_key, decrypt_key, logout} = props;
+
+    const navigate = useNavigate();
 
     const username = Cookies.get('username')
 
@@ -37,7 +39,10 @@ function MessageModal(props) {
 
     const [password, setPassword] = useState([]);
 
-    const [errMsg, setErrMsg] = useState('')
+    const [errMsg, setErrMsg] = useState('');
+
+    const scrollRef = useRef(null);
+
 
     /**
      * Toggles group listing (left panel) between all groups and groups that user is apart of 
@@ -90,13 +95,10 @@ function MessageModal(props) {
         try {
             const res = await Axios({
                 method : 'POST',
-                headers: {
-                    Authorization : 'Bearer ' + Cookies.get('access_token')
-                },
+                withCredentials:true,
                 data : {
                     username : username,
                     group_id : group_id,
-                    token:Cookies.get('access_token')
                 },
                 url : full_url + '/getMessages'
             })
@@ -131,7 +133,11 @@ function MessageModal(props) {
             setErrMsg('');
         } catch (err) {
             console.log(err);
-            setErrMsg('Invalid Password!')
+            if (err.response.status == 401 || err.response.status == 403) {
+                navigate('/Expire')
+            } else {
+                setErrMsg('Invalid Password!')
+            }
         }
     }
 
@@ -143,13 +149,10 @@ function MessageModal(props) {
             // Retrieve public keys of all members in group to encrypt message 
             const res = await Axios({
                 method:'POST',
-                headers: {
-                    Authorization : 'Bearer ' + Cookies.get('access_token')
-                },
+                withCredentials:true,
                 data : {
                     username : username,
                     group_id : selectedGroup.id,
-                    token:Cookies.get('access_token')
                 },
                 url: full_url + '/getGroupKeys'
             })
@@ -173,12 +176,9 @@ function MessageModal(props) {
             // Send encrypted copies to server for storage 
             const response = await Axios({
                 method:'POST',
-                headers: {
-                    Authorization : 'Bearer ' + Cookies.get('access_token')
-                },
+                withCredentials:true,
                 data: {
                     messages : encrypted_copies,
-                    token:Cookies.get('access_token')
                 },
                 url : full_url + '/sendMessage'
             })
@@ -190,7 +190,11 @@ function MessageModal(props) {
 
         } catch(err) {
             console.log(err);
-            // do something to indicate 
+            if (err.response.status == 401 || err.response.status == 403) {
+                navigate('/Expire')
+            } else {
+                // Do something else 
+            }
         }
     }
 
@@ -206,14 +210,11 @@ function MessageModal(props) {
         try {
             const res = await Axios({
                 method: 'POST', 
-                headers : {
-                    Authorization : 'Bearer ' + Cookies.get('access_token')
-                },
+                withCredentials:true,
                 data : {
                     name : name,
                     username : username, 
                     datetime: datetime,
-                    token:Cookies.get('access_token')
                 },
                 url: full_url + '/addGroup'
             })
@@ -222,7 +223,11 @@ function MessageModal(props) {
             selectGroup(null, res.data)
 
         } catch (err) {
-            console.log(err)
+            if (err.response.status == 401 || err.response.status == 403) {
+                navigate('/Expire')
+            } else {
+                // Do something else 
+            }
         }
     }
 
@@ -234,13 +239,10 @@ function MessageModal(props) {
         try {
             const res = await Axios({
                 method : 'POST',
-                headers : {
-                    Authorization : 'Bearer ' + Cookies.get('access_token')
-                },
+                withCredentials:true,
                 data : {
                     username : username,
                     group_id : group_id,
-                    token:Cookies.get('access_token')
                 },
                 url : full_url + '/leaveGroup'
             })
@@ -249,7 +251,12 @@ function MessageModal(props) {
 
         } catch (err) {
             console.log(err)
-            setErrMsg('Failure to leave group! Please refresh or logout and try again.')
+            if (err.response.status == 401 || err.response.status == 403) {
+                navigate('/Expire')
+            } else {
+                // Do something else 
+                setErrMsg('Failure to leave group! Please refresh or logout and try again.')
+            }
         }
     }
 
@@ -265,13 +272,10 @@ function MessageModal(props) {
             //Get group member usernames and public keys 
             const res = await Axios({
                 method:'POST',
-                headers : {
-                    Authorization : 'Bearer ' + Cookies.get('access_token')
-                },
+                withCredentials:true,
                 data : {
                     username : username,
                     group_id : group_id,
-                    token:Cookies.get('access_token')
                 },
                 url : full_url + '/getGroupKeys'
             })
@@ -291,12 +295,9 @@ function MessageModal(props) {
             // send messages to be stored 
             const res2 = await Axios({
                 method:'POST',
-                headers : {
-                    Authorization : 'Bearer ' + Cookies.get('access_token')
-                },
+                withCredentials:true,
                 data : {
                     messages : encrypted_messages,
-                    token:Cookies.get('access_token')
                 },
                 url : full_url + '/requestJoinGroup'
             })
@@ -307,6 +308,11 @@ function MessageModal(props) {
             btn.style.backgroundColor = 'var(--secondary-color)'
         } catch (err) {
             console.log(err);
+            if (err.response.status == 401 || err.response.status == 403){
+                navigate('/')
+            } else {
+
+            }
         }
     }
 
@@ -318,12 +324,9 @@ function MessageModal(props) {
         try {
             const res = await Axios({
                 method : 'POST',
-                headers : {
-                    Authorization : 'Bearer ' + Cookies.get('access_token')
-                },
+                withCredentials:true,
                 data : {
                     author : author,
-                    token:Cookies.get('access_token')
                 },
                 url : full_url + '/deleteMessage'
             })
@@ -332,10 +335,20 @@ function MessageModal(props) {
 
             setMessages(new_messages)
         } catch (err) {
+            if (err.response.status == 401 || err.response.status == 403){
+                navigate('/')
+            } else {
 
+            }
         }
     }
 
+
+    useEffect(() => {
+        if (scrollRef.current){
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    })
 
     return (
         <div id='message-modal' className='flex row'>
@@ -415,7 +428,7 @@ function MessageModal(props) {
                             
                         </div>
                     </div>
-                    <div id='message-section'>
+                    <div id='message-section' ref={scrollRef}>
                         {
                             messages.map((message) => {
                                 return (

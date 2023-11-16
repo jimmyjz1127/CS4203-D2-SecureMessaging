@@ -21,25 +21,22 @@ function Home(props){
 
     const [errorMsg, setErrorMsg] = useState('');
    
-   
     const navigate = useNavigate();
 
     useLayoutEffect(() => {
         const token = Cookies.get('access_token');
-
-        if (token) {
+        
+        if (Cookies.get('login_state')){
             getGroups(token, (result) => {
                 if (result){
                     setLoginState(1);
                 } else {
-                    setLoginState(0);
+                    logout()
                 }
             })
         } else {
-            // Some stuff to handle invalid token 
+            setLoginState(0);
         }
-
-
     }, [])
 
     /**
@@ -52,21 +49,16 @@ function Home(props){
             // Get all groups 
             const res = await Axios({
                 method: 'POST',
-                headers : {
-                    Authorization : 'Bearer ' + token 
-                },
+                withCredentials:true,
                 url : full_url + '/allgroups'
             })
 
             // Get groups that user is a member of 
             const res2 = await Axios({
                 method : 'POST',
-                headers: {
-                    Authorization : 'Bearer ' + token
-                },
+                withCredentials:true,
                 data : {
-                    username : Cookies.get('username'),
-                    token:Cookies.get('access_token') 
+                    username : Cookies.get('username'), 
                 },
                 url : full_url + '/usergroups'
             })
@@ -100,12 +92,9 @@ function Home(props){
             try {
                 const res = await Axios({
                     method:'POST',
-                    withCredentials : {
-                        Authorization : 'Bearer ' + Cookies.get('access_token') 
-                    },
+                    withCredentials:true,
                     data : {
                         username : Cookies.get('username'),
-                        token:Cookies.get('access_token') 
                     },
                     url : full_url + '/deleteUser'
                 })
@@ -114,7 +103,11 @@ function Home(props){
                 console.log(res.data)
             } catch (err) {
                 console.log(err)
-                setErrorMsg('Failure to delete account! Please logout and try again.')
+                if (err.response.status == 401){
+                    navigate('/')
+                } else {
+                    setErrorMsg('Failure to delete account! Please logout and try again.')
+                }
             }
         }
     }
@@ -129,7 +122,7 @@ function Home(props){
                         <button id='logout-btn' onClick={(e) => logout()}>Logout</button>
                         <button id='delete-account-btn' onClick={(e) => delete_account()}>Delete Account</button>
                     </div>
-                    <div className='error-msg'>{errorMsg}</div>
+                    {errorMsg && <div className='error-msg'>{errorMsg}</div>}
                 </div>
             }
             
@@ -150,6 +143,7 @@ function Home(props){
                     decrypt_string={decrypt_string}
                     encrypt_key={encrypt_key}
                     decrypt_key={decrypt_key}
+                    logout={logout}
                 />
             }
             
