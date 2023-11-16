@@ -298,7 +298,6 @@ router.post('/getMessages', authentication.authenticateToken, async (req,res) =>
                 console.log(err);
                 res.status(500).send("Failure to retrieve messages. Please try again!")
             } else {
-                console.log(result)
                 res.status(200).send(result);
             }
         })
@@ -480,8 +479,6 @@ router.post('/requestJoinGroup', authentication.authenticateToken, async (req,re
         return values 
     })
 
-    console.log(sql_messages)
-
     try  {
         db.store_message(sql_messages, (err,result) => {
             if (err) {
@@ -537,8 +534,6 @@ router.post('/deleteMessage', authentication.authenticateToken, async (req,res) 
     console.log('POST : /deleteMessage');
 
     const {author} = req.body;
-
-    console.log(author)
 
     try {
         db.delete_message(author, (err,result) => {

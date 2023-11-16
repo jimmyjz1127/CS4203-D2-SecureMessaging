@@ -44,6 +44,12 @@
     font-weight:600;
 }
 
+#decrypt-loading{
+    display:none;
+    height:20px;
+    margin-left:5px;
+}
+
 /* ------------ Group Tile Syling ------------- */
 #groups {
     padding:5px;
@@ -235,3 +241,6 @@
     background-color: var(--purple-accent);
 
 }
+
+
+/* ----------  ----------- */

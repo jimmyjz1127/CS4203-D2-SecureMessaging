@@ -14,6 +14,8 @@ import {full_url} from './../../../Config';
 import './MessageModal.css';
 
 
+import LoadingIcon from './../../../assets/loading.gif'
+
 function MessageModal(props) {
     const {allGroups, encrypt_string, decrypt_string, encrypt_key, decrypt_key, logout} = props;
 
@@ -98,6 +100,9 @@ function MessageModal(props) {
      * @returns : json object array of messages 
      */
     const retrieveMessages = async (group_id) => {
+        let loading = document.getElementById('decrypt-loading');
+
+        loading.style.display = 'block';
         try {
             const res = await Axios({
                 method : 'POST',
@@ -148,6 +153,7 @@ function MessageModal(props) {
                 setErrMsg('Invalid Password!')
             }
         }
+        loading.style.display = 'none';
     }
 
 
@@ -414,7 +420,10 @@ function MessageModal(props) {
                 <div id="right-col" className='password-prompt flex col align-center justify-center'>
                     <h2 style={{color:'white'}}>Enter password to decrypt messages.</h2>
                     <input id='decrypt-input' type='password' placeholder='Enter password...' onChange={(e) => setPassword(e.target.value)}/>
-                    <button id='decrypt-btn' onClick={(e) => retrieveMessages(selectedGroup.id)}>Decrypt Messages</button>
+                    <button id='decrypt-btn' onClick={(e) => retrieveMessages(selectedGroup.id)} className='flex row justify-center'>
+                        Decrypt Messages
+                        <img id='decrypt-loading' src={LoadingIcon}/>
+                    </button>
                     <div className='err-msg'>{errMsg}</div>
                 </div>
 
