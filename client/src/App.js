@@ -4,7 +4,9 @@ import Axios from 'axios';
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
 import { JSEncrypt } from "jsencrypt";
-import {bcrypt, crypto, keypair} from './crypto'
+import {keypair} from './crypto'
+
+import {AES, enc} from 'crypto-js'
 
 // Styling 
 import './App.css';
@@ -93,7 +95,7 @@ function App() {
 	 * @returns 
 	 */
 	const encrypt_key = (data,secret) => {
-		let cipher = crypto.AES.encrypt(data, secret).toString();
+		let cipher = AES.encrypt(data, secret).toString();
 		return cipher;
 	}
 
@@ -104,8 +106,8 @@ function App() {
 	 * @returns 
 	 */
 	const decrypt_key = (cipher,secret) => {
-		let bytes = crypto.AES.decrypt(cipher, secret);
-		let decipher = bytes.toString(crypto.enc.Utf8);
+		let bytes = AES.decrypt(cipher, secret);
+		let decipher = bytes.toString(enc.Utf8);
 		return decipher;
 	}
 	
@@ -125,7 +127,7 @@ function App() {
 						decrypt_key={decrypt_key}
 					/>} />
 					<Route path='/Login' element={<Login
-						bcrypt={bcrypt}
+						// bcrypt={bcrypt}
 						encrypt_string={encrypt_string}
 						decrypt_string={decrypt_string}
 						generateKeyPair={generateKeyPair}
@@ -133,7 +135,7 @@ function App() {
 						decrypt_key={decrypt_key}
 					/>} />
 					<Route path='/Register' element={<Register
-						bcrypt={bcrypt}
+						// bcrypt={bcrypt}
 						encrypt_string={encrypt_string}
 						decrypt_string={decrypt_string}
 						generateKeyPair={generateKeyPair}

@@ -480,6 +480,8 @@ router.post('/requestJoinGroup', authentication.authenticateToken, async (req,re
         return values 
     })
 
+    console.log(sql_messages)
+
     try  {
         db.store_message(sql_messages, (err,result) => {
             if (err) {
@@ -534,7 +536,9 @@ router.post('/joinGroup', authentication.authenticateToken, async (req,res) => {
 router.post('/deleteMessage', authentication.authenticateToken, async (req,res) => {
     console.log('POST : /deleteMessage');
 
-    const {author, token} = req.body;
+    const {author} = req.body;
+
+    console.log(author)
 
     try {
         db.delete_message(author, (err,result) => {

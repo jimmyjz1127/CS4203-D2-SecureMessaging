@@ -301,7 +301,7 @@ function MessageModal(props) {
                     group_id : group_id,
                     key_user : obj.username,
                     datetime : date,
-                    type : '1'
+                    type : 1
                 }
             })
 

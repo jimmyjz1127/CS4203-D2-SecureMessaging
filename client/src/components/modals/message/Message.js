@@ -3,8 +3,6 @@ import {useEffect, useLayoutEffect, useState} from 'react';
 import Axios from 'axios';
 import {BrowserRouter, Routes, Route, useNavigate, Link} from "react-router-dom";
 import Cookies from 'js-cookie';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faFilter, faUserPlus, faPenToSquare, faRightFromBracket, faUnlock} from '@fortawesome/free-solid-svg-icons';
 
 import {full_url} from './../../../Config';
 
@@ -18,13 +16,14 @@ function Message(props){
         try {
             const res = await Axios({
                 method : 'POST',
+                withCredentials:true,
                 data: { 
                     username : author,
                     group_id : message.group_id,
                 },
                 url : full_url + '/joinGroup'
             })
-            delete_message(message.id, author);
+            delete_message(author);
         } catch (err) {
             console.log(err)
         }
@@ -39,7 +38,7 @@ function Message(props){
                         <div style={{fontSize:'0.8em'}}>{message.author} has requested to join group.</div>
                         <div>
                             <button className="request-btn" onClick={(e) => accept_request(message.author)}>Accept</button>
-                            <button className='request-btn' onClick={(e) => delete_message(message.id)}>Decline</button>
+                            <button className='request-btn' onClick={(e) => delete_message(message.author)}>Decline</button>
                         </div>
                     </div>
                 </div>

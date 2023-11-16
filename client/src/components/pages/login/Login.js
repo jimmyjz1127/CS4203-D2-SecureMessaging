@@ -4,13 +4,15 @@ import Axios from 'axios';
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
 
+import {genSaltSync, hashSync} from 'bcryptjs'
+
 import {server_port, server_url, full_url} from './../../../Config';
 import './Login.css'
 
 import LoadingIcon from './../../../assets/loading.gif';
 
 function Login(props) {
-    const {bcrypt, encrypt_string, decrypt_string} = props;
+    const {encrypt_string, decrypt_string} = props;
 
     const navigate = useNavigate();
 
@@ -44,7 +46,7 @@ function Login(props) {
                     withCredentials:true,
                     data:{
                         username : username,
-                        password : bcrypt.hashSync(password, salt) // generate original password hash from registration
+                        password : hashSync(password, salt) // generate original password hash from registration
                     },
                     url:full_url + '/login'
                 });

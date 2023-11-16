@@ -7,12 +7,14 @@ import Cookies from 'js-cookie';
 import {server_port, server_url, full_url} from './../../../Config';
 import './Register.css'
 
+import {genSaltSync, hashSync} from 'bcryptjs'
+
 // Assets 
 import LoadingIcon from './../../../assets/loading.gif';
 
 
 function Register(props) {
-    const {bcrypt, decrypt_string, encrypt_string, generateKeyPair, encrypt_key} = props;
+    const {decrypt_string, encrypt_string, generateKeyPair, encrypt_key} = props;
 
     const navigate = useNavigate();
 
@@ -57,7 +59,7 @@ function Register(props) {
             try{
                 setLoading(1);
 
-                const salt = bcrypt.genSaltSync(10);
+                const salt = genSaltSync(10);
                 let {public_key, private_key} = generateKeyPair();
 
                 // encrypt private key (symetrically) with password before sending to server for storage 
@@ -69,7 +71,7 @@ function Register(props) {
                     data:{
                         username:username, 
                         email:email,
-                        password:bcrypt.hashSync(password, salt),
+                        password:hashSync(password, salt),
                         salt : salt,
                         public_key:public_key,
                         private_key:encrypted_private_key
