@@ -5,8 +5,6 @@ require('dotenv').config();
 const authenticateToken = (req, res, next) => { 
     const {access_token, refresh_token} = req.cookies;
 
-    console.log(access_token)
-
     if (access_token == null){
         return res.status(401).json({error:"NULL TOKEN"})
     } else {//verify token was created using our secret 

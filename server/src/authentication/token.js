@@ -8,10 +8,9 @@ const db = require('./../database');
 require("dotenv").config();
 
 //generates tokens
-const jwtCodes = (username, email) => {
+const jwtCodes = (username) => {
     const data = {
-        username : username,
-        email : email,
+        username : username
     }
 
     const accessExpiresIn = "20000s";

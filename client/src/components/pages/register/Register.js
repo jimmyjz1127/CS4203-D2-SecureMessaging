@@ -19,7 +19,6 @@ function Register(props) {
     const navigate = useNavigate();
 
     const [username, setUsername] = useState();
-    const [email, setEmail] = useState();
     const [password, setPassword] = useState();
     const [errorMessage, setErrorMessage] = useState();
 
@@ -34,14 +33,6 @@ function Register(props) {
         return true;
     }
 
-    const validateEmail = () => {
-        const emailPattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-
-        if (!email){return false;} 
-        else if (!emailPattern.test(email)){return false;} 
-        return true;
-    }
-
     const validateUsername = () => {
         const usernamePattern = /^[A-Za-z0-9._]+$/;
 
@@ -52,8 +43,7 @@ function Register(props) {
 
 
     const register = async () => {
-        if (!validateEmail()) {setErrorMessage('Please check email!');}
-        else if (!validateUsername()) {setErrorMessage('Please check username!');}
+        if (!validateUsername()) {setErrorMessage('Please check username!');}
         else if (!validatePassword()) {setErrorMessage('Please check password!')}
         else {
             try{
@@ -70,7 +60,6 @@ function Register(props) {
                     withCredentials:true,
                     data:{
                         username:username, 
-                        email:email,
                         password:hashSync(password, salt),
                         salt : salt,
                         public_key:public_key,
@@ -83,7 +72,6 @@ function Register(props) {
                 let data = res.data;
 
                 Cookies.set('username', username, {secure:true, sameSite:'Strict'});
-                Cookies.set('email', data.email, {secure:true, sameSite:'Strict'});
                 Cookies.set('login_state', 1, {secure:true, sameSite:'Strict'})
                 Cookies.set('private_key', encrypted_private_key, {secure:true, sameSite:'Strict'});
                 Cookies.set('public_key', public_key, {secure:true, sameSite:'Strict'});
@@ -104,13 +92,6 @@ function Register(props) {
                     <h1 id='register-header'>Register Account</h1>
 
                     <div id='register-error'>{errorMessage}</div>
-
-                    <input 
-                        className='register-text' 
-                        type='email' 
-                        placeholder='Enter email...'
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
 
                     <input 
                         className='register-text' 

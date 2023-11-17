@@ -64,7 +64,6 @@
 }
 
 .member-tile{
-    /* border:1px solid var(--purple-accent); */
     background-color: var(--purple-accent);
 }
 

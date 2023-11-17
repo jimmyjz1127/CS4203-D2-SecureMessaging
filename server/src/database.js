@@ -15,11 +15,11 @@ const fs = require('fs/promises');
  * @param {*} callback    : callback to return result 
  */
 const validate_registration = (credentials, callback) => {
-    const {username, email} = credentials; 
+    const {username} = credentials; 
 
-    let query = 'SELECT COUNT(*) FROM users WHERE email=(?) OR username=(?)';
+    let query = 'SELECT COUNT(*) FROM users WHERE username=(?)';
 
-    pool.query(query, [email, username], (err,res) => {
+    pool.query(query, [username], (err,res) => {
         callback(err, res)
     })
 } 
@@ -30,11 +30,11 @@ const validate_registration = (credentials, callback) => {
  * @param {*} callback    : callback to return result 
  */
 const add_user = (credentials, callback) => {
-    const {username, email, password, salt, public_key, private_key} = credentials; 
+    const {username, password, salt, public_key, private_key} = credentials; 
 
-    let query = "INSERT INTO users (username, email, password, salt, public_key, private_key) VALUES (?,?,?,?,?,?)";
+    let query = "INSERT INTO users (username, password, salt, public_key, private_key) VALUES (?,?,?,?,?)";
 
-    pool.query(query, [username, email, password, salt, public_key, private_key], (err,res) => {
+    pool.query(query, [username, password, salt, public_key, private_key], (err,res) => {
         callback(err,res)
     })
 }

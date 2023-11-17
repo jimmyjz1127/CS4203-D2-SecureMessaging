@@ -91,26 +91,25 @@ const check_group_membership = (group_id, user_id) => {
  * 3) Creates access token based on user credentials and sends tokens back to user 
  * 
  * Arguments:
- *      req.body = {username, email, password}
+ *      req.body = {username, password}
  */
 router.post('/register', async (req,res) => {
     console.log('POST : /register')
 
-    const {email, username, password, salt, public_key, private_key} = req.body;
+    const {username, password, salt, public_key, private_key} = req.body;
 
     try {
         db.validate_registration(req.body, async (err, res1) => {
             if (err) {
                 res.status(500).send('Error : please try again')
             } else if (!res1) {
-                res.status(500).send('Error : username or email already taken');
+                res.status(500).send('Error : username already taken');
             } else {
                 // Hash password
                 const password_hash = await bcrypt.hash(password, 16)
 
                 const credentials = {
                     username : username,
-                    email : email,
                     password : password_hash,
                     salt:salt,
                     public_key:public_key,
@@ -123,14 +122,13 @@ router.post('/register', async (req,res) => {
                         res.status(500).send('Error : please try again')
                     } 
                     else {
-                        let tokens = jwtTokens.jwtCodes(username, email); // generate refresh and access token
+                        let tokens = jwtTokens.jwtCodes(username); // generate refresh and access token
 
                         res.cookie('refresh_token', tokens.refreshToken, {httpOnly:true, sameSite:'Strict', secure:true})
                         res.cookie('access_token', tokens.accessToken, {httpOnly:true, sameSite:'Strict', secure:true})
 
                         let obj = {
                             username : username,
-                            email : email,
                             private_key : private_key,
                             public_key : public_key
                         }
@@ -169,17 +167,13 @@ router.post('/login', async (req,res) => {
 
                     // Compare password hashes 
                     if (await bcrypt.compareSync(password,result[0].password)){
-                        let tokens = jwtTokens.jwtCodes(
-                            result[0].username,
-                            result[0].email,
-                        )
+                        let tokens = jwtTokens.jwtCodes(result[0].username)
 
                         res.cookie('refresh_token', tokens.refreshToken, {httpOnly:true, sameSite:'Strict', secure:true})
                         res.cookie('access_token', tokens.accessToken, {httpOnly:true, sameSite:'Strict', secure:true})
 
                         let obj = {
                             username : username,
-                            email : result[0].email,
                             private_key : result[0].private_key,
                             public_key : result[0]. public_key
                         }

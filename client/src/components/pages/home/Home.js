@@ -15,8 +15,6 @@ import MessageModal from './../../modals/MessageModal/MessageModal';
 function Home(props){
     const {logout, encrypt_string, decrypt_string, encrypt_key, decrypt_key, loginState, setLoginState} = props;
 
-    // const [loginState, setLoginState] = useState(0);
-
     const [groups, setGroups] = useState([]);
 
     const [errorMsg, setErrorMsg] = useState('');

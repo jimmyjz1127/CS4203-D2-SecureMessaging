@@ -386,16 +386,16 @@ function MessageModal(props) {
 
                 <div id='groups'>
                     {
-                        groups.map((group) => {
+                        groups.map((group, index) => {
                             if (group && group.member){
                                 return (
-                                    <div className='btn member-tile group-tile flex row align-center justify-between' onClick={(e) => selectGroup(e, group)}>
+                                    <div key={index} className='btn member-tile group-tile flex row align-center justify-between' onClick={(e) => selectGroup(e, group)}>
                                         <h4>{group.name}</h4>
                                     </div>
                                 )
                             } else if (group){
                                 return (
-                                    <div className='btn group-tile flex row align-center justify-between' onClick={(e) => selectGroup(e, group)}>
+                                    <div key={index} className='btn group-tile flex row align-center justify-between' onClick={(e) => selectGroup(e, group)}>
                                         <h4>{group.name}</h4>
                                     </div>
                                 )
@@ -453,9 +453,9 @@ function MessageModal(props) {
                     </div>
                     <div id='message-section' ref={scrollRef}>
                         {
-                            messages.map((message) => {
+                            messages.map((message, index) => {
                                 return (
-                                    <Message message={message} username={username} delete_message={delete_message}/>
+                                    <Message key={index} message={message} username={username} delete_message={delete_message}/>
                                 )
                             })
                         }

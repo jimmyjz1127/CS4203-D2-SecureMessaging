@@ -57,10 +57,8 @@ function Login(props) {
 
                 let private_key = data.private_key;
                 let public_key = data.public_key;
-                let email = data.email;
 
                 Cookies.set('username', username, {secure:true, sameSite:'Strict'});
-                Cookies.set('email', email, {secure:true, sameSite:'Strict'})
                 Cookies.set('private_key', private_key, {secure:true, sameSite:'Strict'})
                 Cookies.set('public_key', public_key, {secure:true, sameSite:'Strict'})
                 Cookies.set('login_state', 1, {secure:true, sameSite:'Strict'})
