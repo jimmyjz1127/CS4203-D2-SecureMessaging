@@ -147,11 +147,12 @@ function MessageModal(props) {
             setErrMsg('');
         } catch (err) {
             console.log(err);
-            if (err.response.status == 401 || err.response.status == 403) {
+            if (err.response && (err.response.status == 401 || err.response.status == 403)) {
                 navigate('/Expire')
             } else {
                 setErrMsg('Invalid Password!')
             }
+            loading.style.display = 'none';
         }
         loading.style.display = 'none';
     }
@@ -339,13 +340,14 @@ function MessageModal(props) {
      * handles deleting a message (join request messages)
      * @param {*} message_id 
      */
-    const delete_message = async (author) => {
+    const delete_message = async (author, group_id) => {
         try {
             const res = await Axios({
                 method : 'POST',
                 withCredentials:true,
                 data : {
                     author : author,
+                    group_id : group_id
                 },
                 url : full_url + '/deleteMessage'
             })

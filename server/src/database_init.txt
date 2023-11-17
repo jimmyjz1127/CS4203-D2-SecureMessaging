@@ -4,7 +4,6 @@
 
 CREATE TABLE users(
     username VARCHAR(200) NOT NULL,
-    email VARCHAR(200) NOT NULL,
     password VARCHAR(300) NOT NULL,
     salt VARCHAR(200) NOT NULL,
     public_key TEXT NOT NULL,

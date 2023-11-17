@@ -23,7 +23,7 @@ function Message(props){
                 },
                 url : full_url + '/joinGroup'
             })
-            delete_message(author);
+            delete_message(author, message.group_id);
         } catch (err) {
             console.log(err)
         }
@@ -38,7 +38,7 @@ function Message(props){
                         <div style={{fontSize:'0.8em'}}>{message.author} has requested to join group.</div>
                         <div>
                             <button className="request-btn" onClick={(e) => accept_request(message.author)}>Accept</button>
-                            <button className='request-btn' onClick={(e) => delete_message(message.author)}>Decline</button>
+                            <button className='request-btn' onClick={(e) => delete_message(message.author, message.group_id)}>Decline</button>
                         </div>
                     </div>
                 </div>

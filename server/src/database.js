@@ -198,11 +198,18 @@ const delete_user = (username, callback) => {
     })
 }
 
+const delete_message_from_group = (author, type, group_id, callback) => {
+    let query = 'DELETE FROM messages WHERE author=(?) AND type=(?) AND group_id=(?)';
+
+    pool.query(query, [author, type, group_id], (err,res) => {
+        callback(err,res)
+    })
+}
 
 const delete_message = (author, callback) => {
-    let query = 'DELETE FROM messages WHERE author=(?) AND type=(?)';
+    let query = 'DELETE FROM messages WHERE author=(?)';
 
-    pool.query(query, [author, 1], (err,res) => {
+    pool.query(query, [author], (err,res) => {
         callback(err,res);
     })
 }
@@ -232,5 +239,6 @@ module.exports = {
     remove_user_from_group,
     delete_user,
     delete_message,
-    get_group_members
+    get_group_members,
+    delete_message_from_group
 }

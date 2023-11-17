@@ -418,7 +418,14 @@ router.post('/leaveGroup', authentication.authenticateToken, async (req, res) =>
                     console.log(err);
                     res.status(500).send('Error removing user from group! Please try again.');
                 } else {
-                    res.status(200).send('Successfully removed user from group');
+                    db.delete_message_from_group(username, 0, group_id, (err2,result2) => {
+                        if (err2){
+                            console.log(err2);
+                            res.status(500).send('Error removing user from group! Please try again.');
+                        } else {
+                            res.status(200).send('Success')
+                        }
+                    })
                 }
             })
         } catch (err) {
@@ -446,7 +453,14 @@ router.post('/deleteUser', authentication.authenticateToken, async (req,res) => 
                     console.log(err);
                     res.status(500).send('Failure to delete user');
                 } else {
-                    res.status(200).send('Success')
+                    db.delete_message(username, (err2, result2) => {
+                        if (err2) {
+                            console.log(err2);
+                            res.status(500).send('Failure to delete user messages')
+                        } else {
+                            res.status(200).send('Success')
+                        }
+                    })
                 }
             })
         } catch (err) {
@@ -527,10 +541,10 @@ router.post('/joinGroup', authentication.authenticateToken, async (req,res) => {
 router.post('/deleteMessage', authentication.authenticateToken, async (req,res) => {
     console.log('POST : /deleteMessage');
 
-    const {author} = req.body;
+    const {author, group_id} = req.body;
 
     try {
-        db.delete_message(author, (err,result) => {
+        db.delete_message_from_group(author, 1, group_id, (err,result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send('Failed to delete message')
