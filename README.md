@@ -32,12 +32,6 @@ A Web-based, secure, end-to-end encrypted, zero-knowledge messaging application.
     │   └── server.js               : Contains functionality for starting server and setting up dependencies 
     └── .env                        : Contains secrets used for signing JWT Tokens 
 
-- `client`/
-      - `node_modules`
-      - `src/`
-          - `components/`
-              - `pages/`
-
 
 # Instructions 
 
