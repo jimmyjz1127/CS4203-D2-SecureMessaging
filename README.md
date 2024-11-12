@@ -1,5 +1,5 @@
 # CS4203-D2
-
+A Web-based, secure, end-to-end encrypted, zero-knowledge messaging application. 
 
 # Files
 .
